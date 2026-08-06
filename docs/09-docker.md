@@ -12,8 +12,12 @@ Mastodon은 여러 컨테이너로 구성되어 있기 때문에 Docker Compose�
 
 ## 트러블슈팅
 
-- Docker Build 실패
-- 원인
-  rbenv(bundle), yarn 등의 패키지 업데이트가 안되어 있음.
-- 해결
-  즉시 해당 패키지를 업데이트하여 재빌드.
+### Docker 인증 오류
+
+- 원인 : 종종 로그인이 풀릴 때가 있음.
+- 해결 : sudo service docker start 및 docker login으로 재로그인.
+
+### Docker Build 실패
+
+- 원인 : rbenv(bundle), yarn 등의 패키지 업데이트가 안되어 있음.
+- 해결 : 즉시 해당 패키지를 업데이트하여 재빌드.

@@ -12,8 +12,6 @@
 
 ## 조사 과정
 
-## 조사 과정
-
 1. Docker Compose 상태 확인 (docker compose ps)
 2. Web/Puma 로그 확인 → 정상 기동 확인
 3. PostgreSQL 연결 확인 → 정상

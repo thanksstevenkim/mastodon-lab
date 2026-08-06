@@ -17,8 +17,6 @@
 
 ## 해결
 
-## 해결
-
 1. 기존 docker-compose.yml 백업
 2. 최신 compose 파일 적용
 3. Web, Sidekiq, ES 설정 비교
