@@ -1,43 +1,76 @@
-# Cloudflare 521 after Mastodon Upgrade
+# Ticket ID
 
-## 증상
+SUP-0001
 
-- Cloudflare 521
-- Docker 컨테이너 정상
-- DB 정상
-- Puma 정상
-- Web 접속 불가
+# Title
 
-## DownTime : 60-90 minutes
+Cloudflare 521 after Mastodon upgrade
 
-## 조사 과정
+# Severity
 
-1. Docker Compose 상태 확인 (docker compose ps)
-2. Web/Puma 로그 확인 → 정상 기동 확인
-3. PostgreSQL 연결 확인 → 정상
-4. Elasticsearch 로그 확인
-5. nginx -t 수행
-6. systemctl status nginx 확인 → 서비스가 기동 실패 상태
+High
 
-## 원인
+# Environment
 
-- nginx가 R2 upstream DNS를 해석하지 못해 기동 실패.
-- nginx 서비스가 내려가 Cloudflare가 원본에 연결 불가.
+- Ubuntu 24.04 LTS
+- Mastodon
+- Docker Compose
+- Nginx
+- Cloudflare
 
-## 해결
+# Issue
 
-- nginx -t를 돌려 설정 자체에 이상이 있는지 확인
-- nginx 설정 중 중복된 설정 제거
-- nginx 재시작
-- 서비스 정상 확인
+Users were unable to access the Mastodon instance after an upgrade.
+Cloudflare returned HTTP 521 while application containers continued running normally.
 
-## 배운 점
+# Symptoms
 
-- 521은 애플리케이션이 아니라 리버스 프록시 문제일 수도 있다.
-- Docker 컨테이너뿐만 아니라, systemctl status nginx를 먼저 확인해보자.
+- Cloudflare HTTP 521
+- Docker containers healthy
+- PostgreSQL healthy
+- Puma running normally
+- Web access unavailable
 
-## 재발 방지
+# Impact
 
-- Cloudflare 521 발생 시 우선 nginx 상태를 확인한다.
-- nginx 설정 변경 후에는 반드시 `nginx -t`로 검증한다.
-- R2 upstream을 사용하는 경우 DNS 해석 실패 가능성을 고려한다.
+- Public web access unavailable
+- Service downtime: approximately 60–90 minutes
+
+# Investigation
+
+1. Checked Docker Compose status (`docker compose ps`)
+2. Verified Web and Puma logs
+3. Confirmed PostgreSQL connectivity
+4. Reviewed Elasticsearch logs
+5. Tested nginx configuration using `nginx -t`
+6. Checked nginx service status with `systemctl status nginx`
+
+# Root Cause
+
+Nginx failed to start due to an invalid configuration after the upgrade.
+As a result, Cloudflare could not establish a connection with the origin server.
+
+# Resolution
+
+1. Verified nginx configuration using `nginx -t`
+2. Removed duplicated nginx configuration
+3. Restarted nginx
+4. Confirmed successful service recovery
+
+# Verification
+
+- nginx running normally
+- Cloudflare accessible
+- Mastodon web interface available
+- Users able to reconnect successfully
+
+# Lessons Learned
+
+- Cloudflare 521 does not always indicate an application failure.
+- Reverse proxy services should be checked before investigating application containers.
+
+# Prevention
+
+- Run `nginx -t` before restarting nginx.
+- Verify nginx service status whenever Cloudflare returns 521.
+- Review upstream configuration after upgrades.

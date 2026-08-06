@@ -1,37 +1,74 @@
-# Elasticsearch Service Name Mismatch after Upgrade
+# Ticket ID
 
-## 증상
+SUP-0002
 
-- Sidekiq의 Temporary Failure in Name Resolution
+# Title
 
-## 조사 과정
+Elasticsearch service name mismatch after upgrade
 
-1. Docker Container 확인
-2. Console 컨테이너 부재 확인
-3. docker-compose.yml 파일 업데이트 및 기존 파일 백업
-4. Elasticsearch 컨테이너 확인
+# Severity
 
-## 원인
+High
 
-- 환경변수에서 가리키는 ES_HOST 이름과 실제 컨테이너 이름이 차이가 있음.
+# Environment
 
-## 해결
+- Ubuntu 24.04 LTS
+- Mastodon
+- Docker Compose
+- Elasticsearch
+- Sidekiq
 
-1. 기존 docker-compose.yml 백업
-2. 최신 compose 파일 적용
-3. Web, Sidekiq, ES 설정 비교
-4. ES_HOST를 `elasticsearch`에서 `es`로 수정
-5. 컨테이너 재생성
-6. Sidekiq에서 Elasticsearch 연결 확인
+# Issue
 
-## 배운 점
+Sidekiq failed to connect to Elasticsearch after upgrading Mastodon.
 
-- YAML 파일을 업데이트한다 해도 기존 설정을 백업해둬서 설정을 복원할 수 있어야 한다.
-- 컨테이너 이름이 변경되었으면 전부 일치시켜야 한다.
+# Symptoms
 
-## Impact
+- Temporary failure in name resolution
+- Sidekiq unable to connect to Elasticsearch
+- Search functionality unavailable
 
-- Web UI 접근 불가
-- API 접근 불가
-- Federation 일시 중단
-- DownTime: 60~90 minutes
+# Impact
+
+- Web UI affected
+- API unavailable
+- Federation temporarily interrupted
+- Downtime: approximately 60–90 minutes
+
+# Investigation
+
+1. Checked running Docker containers
+2. Confirmed console container status
+3. Compared docker-compose.yml with the latest release
+4. Reviewed Elasticsearch configuration
+5. Compared ES_HOST with container names
+
+# Root Cause
+
+The Elasticsearch container name had changed during the upgrade, but ES_HOST still referenced the previous service name.
+
+# Resolution
+
+1. Backed up existing docker-compose.yml
+2. Applied the latest compose configuration
+3. Updated ES_HOST from `elasticsearch` to `es`
+4. Recreated containers
+5. Verified Sidekiq connection to Elasticsearch
+
+# Verification
+
+- Elasticsearch reachable
+- Sidekiq connected successfully
+- Search functionality restored
+- Federation resumed
+
+# Lessons Learned
+
+- Configuration changes between releases should always be reviewed.
+- Service names referenced in environment variables must match Docker Compose services.
+
+# Prevention
+
+- Compare compose files before upgrades.
+- Back up configuration files before modification.
+- Validate service names after major upgrades.

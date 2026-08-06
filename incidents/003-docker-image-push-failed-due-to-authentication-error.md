@@ -36,9 +36,8 @@ Docker login session had expired.
 
 # Resolution
 
-1. Started Docker service.
-2. Ran docker login.
-3. Re-ran docker push successfully.
+1. Re-authenticated using `docker login`.
+2. Re-ran `docker push`.
 
 # Verification
 
@@ -47,3 +46,8 @@ Confirmed image uploaded successfully.
 # Prevention
 
 Verify Docker login status before release.
+
+# Lessons Learned
+
+- Authentication failures are not always related to Docker Engine itself.
+- Verify login status before investigating networking or registry issues.

@@ -1,36 +1,90 @@
-# Mastodon Lab
+This repository is a collection of operational knowledge gained from maintaining a production Mastodon server, with an emphasis on troubleshooting, documentation, and continuous improvement.
 
-This repository contains operational logs, technical documentation, deployment notes, and experiments from running my Mastodon server.
+# Mastodon Operations Lab
 
-Topics include:
+This repository documents my experience operating a self-hosted Mastodon server since 2022.
 
-- Server Administration
-- Infrastructure
+Rather than serving as a deployment guide, it focuses on real-world operational experience, including production incidents, troubleshooting, maintenance procedures, and version upgrades.
+
+The goal of this repository is to demonstrate practical experience in:
+
+- Linux server administration
+- Docker-based application deployment
+- Incident investigation and troubleshooting
+- Technical documentation
+- Service operations
+- Infrastructure maintenance
+
+## Repository Structure
+
+```
+incidents/
+```
+
+Real production incidents, root causes, troubleshooting process, and postmortem documentation.
+
+```
+runbooks/
+```
+
+Operational procedures used for recurring maintenance tasks.
+
+Examples:
+
+- Backup
+- Upgrade
 - Docker
-- Updates and Migrations
-- Moderation Policies
-- Performance Tuning
-- Backup and Recovery
-- Incident Reports
+- Cloudflare
+- Server setup
 
-# Mastodon Server Info:
+```
+update-log/
+```
 
-- Operation Period: 2022.11.11 ~ Present
-- Active Month Users Count: Max 165
-- 사용 환경 : Ubuntu 24.04 LTS / OVHCloud
+Version-specific upgrade notes and migration records.
 
-## 서버 스펙
+## Operational Experience
+
+Production environment:
+
+- Self-hosted Mastodon instance
+- Public service operated since November 2022
+- Peak Monthly Active Users: 165
+
+Responsibilities included:
+
+- Deploying new releases
+- Managing Docker containers
+- Troubleshooting production incidents
+- Backup and recovery
+- Server maintenance
+- Moderation policy management
+- Infrastructure documentation
+
+## Server Spec
 
 - 4c/8t CPU
 - 32GB RAM
 - 4TB HDD SATA
 
-## 사용한 주요 기술
+## Technologies
 
-- Ubuntu (VPS)
+- Ubuntu Server
 - Docker Compose
 - PostgreSQL
 - Redis
 - Nginx
 - Cloudflare
-- Cloudflare SSL
+- Git
+
+## Example Incident Reports
+
+- [Cloudflare 521 after upgrade](incidents/001-cloudflare-521-after-upgrade.md)
+- [Elasticsearch configuration issue](incidents/002-elasticsearch-service-name.md)
+- [Docker image build failures](incidents/003-docker-image-push-failed-due-to-authentication-error.md)
+
+## What This Repository Represents
+
+Operating a production service involves more than deploying software.
+
+This repository reflects practical experience in troubleshooting, documenting operational procedures, investigating incidents, and continuously improving service reliability.
