@@ -1,4 +1,4 @@
-## 업그레이드 과정
+## Upgrade Process
 
 1. cd ~/mastodon
 2. git fetch upstream
@@ -17,9 +17,9 @@
 15. docker compose pull
 16. docker compose down && docker compose up -d
 
-## 트러블슈팅
+## Troubleshooting
 
-### git fetch upstream 실패
+### git fetch upstream failed
 
 - 원인 : 환경 변화 및 다양한 이유
 - 결과 : git remote add upstream https://github.com/mastodon/mastodon.git
