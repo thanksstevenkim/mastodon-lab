@@ -17,15 +17,11 @@ The goal of this repository is to demonstrate practical experience in:
 
 ## Repository Structure
 
-```
-incidents/
-```
+[Incidents](incidents/)
 
 Real production incidents, root causes, troubleshooting process, and postmortem documentation.
 
-```
-runbooks/
-```
+[Runbooks](runbooks/)
 
 Operational procedures used for recurring maintenance tasks.
 
@@ -37,11 +33,13 @@ Examples:
 - Cloudflare
 - Server setup
 
-```
-update-log/
-```
+[Update Log](update-log/)
 
 Version-specific upgrade notes and migration records.
+
+[Operations](operations/)
+
+Operational policies, moderation philosophy, governance decisions, and case studies based on real-world service management.
 
 ## Operational Experience
 
