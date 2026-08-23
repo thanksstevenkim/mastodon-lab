@@ -113,6 +113,12 @@ Verify each item before closing the maintenance window:
 - Incoming and outgoing federation work with a known peer.
 - Application, Sidekiq, streaming, Nginx, and database logs contain no new recurring errors.
 - The database schema version matches the target release.
+
+  Confirm migration status with:
+
+  ```bash
+  docker compose run --rm web bundle exec rails db:migrate:status
+  ```
 - The next scheduled backup completes successfully.
 
 Record the date, previous version, target version, downtime, backup reference, migration result, verification result, and any deviations in a new file under [`update-log/`](../update-log/).
