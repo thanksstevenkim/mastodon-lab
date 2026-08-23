@@ -1,71 +1,44 @@
-This repository is a collection of operational knowledge gained from maintaining a production Mastodon server, with an emphasis on troubleshooting, documentation, and continuous improvement.
-
 # Mastodon Operations Lab
 
-This repository documents my experience operating a self-hosted Mastodon server since 2022.
+This repository collects operational knowledge gained from maintaining a production, self-hosted Mastodon server since November 2022. It focuses on real incidents, troubleshooting, recurring maintenance, and version upgrades rather than providing a general-purpose deployment guide.
 
-Rather than serving as a deployment guide, it focuses on real-world operational experience, including production incidents, troubleshooting, maintenance procedures, and version upgrades.
-
-The goal of this repository is to demonstrate practical experience in:
+The repository demonstrates practical experience in:
 
 - Linux server administration
 - Docker-based application deployment
 - Incident investigation and troubleshooting
-- Technical documentation
-- Service operations
-- Infrastructure maintenance
+- Backup, recovery, and infrastructure maintenance
+- Moderation policy and service operations
+- Technical documentation and continuous improvement
 
-## Repository Structure
+## Repository Guide
 
-[Incidents](incidents/)
+| Area | Description |
+| --- | --- |
+| [Incidents](incidents/) | Production incidents, root-cause analysis, resolutions, and prevention measures |
+| [Runbooks](runbooks/) | Repeatable operational procedures and troubleshooting guides |
+| [Update logs](update-log/) | Version-specific upgrade records, validation results, and lessons learned |
+| [Operations](operations/) | Moderation policies, governance decisions, and operational case studies |
 
-Real production incidents, root causes, troubleshooting process, and postmortem documentation.
+Some runbooks are still being developed. Documents marked **Draft** are placeholders and should not be treated as production-ready procedures.
 
-[Runbooks](runbooks/)
+### Featured Documentation
 
-Operational procedures used for recurring maintenance tasks.
+- [Mastodon upgrade runbook](runbooks/upgrade.md)
+- [Spam and moderation runbook](runbooks/spam-and-moderation.md)
+- [Mastodon signup review bot](runbooks/mastodon-signup-review-bot.md)
+- [Cloudflare 521 after an upgrade](incidents/001-cloudflare-521-after-upgrade.md)
+- [Incomplete database migration](incidents/007-database-migration-incomplete-after-upgrade.md)
+- [GitHub Actions failures caused by fork drift](incidents/009-github-actions-failures-from-fork-drift.md)
 
-Examples:
+## Production Environment
 
-- Backup
-- Upgrade
-- Docker
-- Cloudflare
-- Server setup
+- Self-hosted public Mastodon instance
+- In operation since November 2022
+- Peak monthly active users: 165
+- 4-core/8-thread CPU, 32 GB RAM, and 4 TB SATA HDD
 
-[Update Log](update-log/)
-
-Version-specific upgrade notes and migration records.
-
-[Operations](operations/)
-
-Operational policies, moderation philosophy, governance decisions, and case studies based on real-world service management.
-
-## Operational Experience
-
-Production environment:
-
-- Self-hosted Mastodon instance
-- Public service operated since November 2022
-- Peak Monthly Active Users: 165
-
-Responsibilities included:
-
-- Deploying new releases
-- Managing Docker containers
-- Troubleshooting production incidents
-- Backup and recovery
-- Server maintenance
-- Moderation policy management
-- Infrastructure documentation
-
-## Server Spec
-
-- 4c/8t CPU
-- 32GB RAM
-- 4TB HDD SATA
-
-## Technologies
+## Technology Stack
 
 - Ubuntu Server
 - Docker Compose
@@ -75,14 +48,12 @@ Responsibilities included:
 - Cloudflare
 - Git
 
-## Example Incident Reports
+## Scope and Safety
 
-- [Cloudflare 521 after upgrade](incidents/001-cloudflare-521-after-upgrade.md)
-- [Elasticsearch configuration issue](incidents/002-elasticsearch-service-name.md)
-- [Docker image build failures](incidents/003-docker-image-push-failed-due-to-authentication-error.md)
+The commands and configuration in this repository describe one production environment and may require adaptation elsewhere. Before using a runbook, review the applicable Mastodon release notes, replace example versions and paths, verify backups, and test the procedure in a non-production environment where possible.
+
+Secrets, credentials, personal data, and environment-specific configuration values are intentionally excluded.
 
 ## What This Repository Represents
 
-Operating a production service involves more than deploying software.
-
-This repository reflects practical experience in troubleshooting, documenting operational procedures, investigating incidents, and continuously improving service reliability.
+Operating a production service involves more than deploying software. This repository records the investigation, documentation, and process improvements used to make an independently operated service more reliable over time.
