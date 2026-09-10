@@ -503,6 +503,36 @@ At that point, the incident was considered contained and cleanup complete.
 
 Continued monitoring remained necessary because indicators such as the OAuth application name and User-Agent can be changed easily.
 
+# Monitoring Alert Issue
+
+During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
+
+Manual messages sent from the same Matrix bot account to the same room generated push notifications normally.
+
+Inspection of the Signup Review Bot code showed that the main signup card was sent using:
+
+```python
+msgtype=MessageType.NOTICE
+```
+
+which is serialized as:
+
+```text
+m.notice
+```
+
+The main signup card was changed to:
+
+```python
+msgtype=MessageType.TEXT
+```
+
+while thread replies, enrichment details, and accept/reject confirmations remain `m.notice`.
+
+After restarting the bot, signup alerts generated push notifications successfully on Element X for iPhone.
+
+This issue did not cause the registration abuse itself, but it reduced the effectiveness of the moderation alerting path and contributed to delayed detection.
+
 # Root Cause
 
 The immediate cause was automated use of Mastodon's public client-registration and account-registration API.
@@ -556,6 +586,7 @@ The most accurate description is therefore:
 - Consider documenting a repeatable incident-response query for accounts grouped by `created_by_application_id`
 - Keep destructive account cleanup behind an incident-specific database backup
 - Prefer Mastodon's own deletion workers/services over direct database deletion
+- Keep the main Signup Review Bot alert as `m.text` so moderator-facing signup events generate mobile push notifications.
 
 # Lessons Learned
 
@@ -578,3 +609,5 @@ The most accurate description is therefore:
 - Use Mastodon's account deletion services and workers instead of direct SQL deletion.
 - Separate suspicious-account cleanup from OAuth-application cleanup and verify each stage independently.
 - A contained incident does not imply attribution: observed automation, source IPs, and client identifiers should not be used to make unsupported claims about who operated the system.
+- Delivery of a Matrix event to a room does not guarantee that the event will generate a mobile push notification.
+- Use `m.text` for moderator-facing alerts that require attention, while keeping passive thread/status messages as `m.notice` to avoid notification noise.
