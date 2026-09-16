@@ -726,8 +726,8 @@ Possible improvements after evaluating the initial deployment:
 - Deploy a self-hosted Reacher instance.
 - Evaluate IP and ASN information as moderation signals.
 - Add persistence for pending reviews.
-- Document the signup approval policy.
-- Evaluate denylist integration separately.
+- Keep the signup approval policy documentation synchronized with current operations.
+- Evaluate Signup Review Bot integration with known registration-abuse indicators.
 - Add monitoring for bot/container availability.
 
 The goal is not to automatically reject every unusual signup, but to provide moderators with enough context to make better decisions while reducing false positives for legitimate users.

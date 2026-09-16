@@ -12,7 +12,7 @@ Previously, open registration required frequent manual moderation.
 
 Pros
 
-- Prevents automated account creation.
+- Prevents automated registrations from becoming active without moderator review.
 
 Cons
 

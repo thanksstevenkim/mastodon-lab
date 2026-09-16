@@ -536,6 +536,9 @@ Environment during recurrence:
 
 - Mastodon 4.7.2
 - Custom Mastodon fork
+- Docker Compose
+- Nginx
+- Cloudflare
 
 ## OAuth application name blocklist
 
@@ -568,15 +571,75 @@ The implementation was tested with:
 29 examples, 0 failures
 ```
 
-and RuboCop reported:
+RuboCop verification returned:
 
 ```text
 6 files inspected, no offenses detected
 ```
 
 The blocklist is intended as an incident-specific mitigation and not as a complete
-anti-automation mechanism. OAuth application names are client-controlled and can
-be changed by the remote client.
+anti-automation mechanism.
+
+OAuth application names are controlled by clients and can be changed easily.
+The existing Nginx registration rate limits therefore remain enabled as an
+additional layer of protection.
+
+## Recurrence cleanup
+
+The pending accounts associated with the recurrence were reviewed and removed.
+
+As with the initial cleanup, the suspicious accounts were not deleted directly
+from PostgreSQL.
+
+Cleanup followed Mastodon's own account deletion path using account suspension
+and `AccountDeletionWorker`.
+
+The remaining `BoomProtocolProbe` OAuth applications associated with the
+recurrence were also removed.
+
+The cleanup was limited to registrations associated with the known
+`BoomProtocolProbe` applications so that unrelated pending registrations would
+not be affected.
+
+## Production deployment
+
+After the implementation and tests were completed, the OAuth application-name
+blocklist was deployed to the production Mastodon environment.
+
+The production environment configuration is stored in:
+
+```text
+/opt/mastodon/.env.mastodon
+```
+
+The following value was added:
+
+```env
+BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+```
+
+The Mastodon containers were then recreated from `/opt/mastodon` using:
+
+```bash
+docker compose up -d
+```
+
+This applied the updated application code and environment configuration to the
+running production containers.
+
+The production mitigation now blocks `BoomProtocolProbe` at both:
+
+1. OAuth application creation through `/api/v1/apps`
+2. account registration through an existing blocked OAuth application
+
+The recurrence cleanup and production deployment were completed successfully.
+
+Existing Nginx per-IP and global registration rate limits remain in place as
+defense-in-depth.
+
+The application-name blocklist should not be treated as attribution or as a
+general-purpose anti-bot mechanism. If the automated client changes its
+application name, additional investigation and mitigation may be required.
 
 # Monitoring Alert Issue
 
