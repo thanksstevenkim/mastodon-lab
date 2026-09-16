@@ -688,6 +688,17 @@ docker logs -f fedi-signup-bot
 
 Repeat with another test account using ❌ or `reject` if rejection behavior also needs to be verified.
 
+### Review card appears but no mobile push notification is generated
+
+The main moderator-facing review card must use `m.text` rather than `m.notice`
+when a mobile push notification is expected.
+
+Thread replies and status messages may remain `m.notice` to avoid notification noise.
+
+See:
+
+[Matrix Signup Bot push notifications](../operations/matrix-signup-bot-push-notifications.md)
+
 ## Initial Deployment Verification
 
 The following parts of the deployment have been verified:

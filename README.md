@@ -13,12 +13,12 @@ The repository demonstrates practical experience in:
 
 ## Repository Guide
 
-| Area | Description |
-| --- | --- |
-| [Incidents](incidents/) | Production incidents, root-cause analysis, resolutions, and prevention measures |
-| [Runbooks](runbooks/) | Repeatable operational procedures and troubleshooting guides |
-| [Update logs](update-log/) | Version-specific upgrade records, validation results, and lessons learned |
-| [Operations](operations/) | Moderation policies, governance decisions, and operational case studies |
+| Area                       | Description                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| [Incidents](incidents/)    | Production incidents, root-cause analysis, resolutions, and prevention measures |
+| [Runbooks](runbooks/)      | Repeatable operational procedures and troubleshooting guides                    |
+| [Update logs](update-log/) | Version-specific upgrade records, validation results, and lessons learned       |
+| [Operations](operations/)  | Moderation policies, governance decisions, and operational case studies         |
 
 Some runbooks are still being developed. Documents marked **Draft** are placeholders and should not be treated as production-ready procedures.
 
@@ -30,6 +30,8 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [Cloudflare 521 after an upgrade](incidents/001-cloudflare-521-after-upgrade.md)
 - [Incomplete database migration](incidents/007-database-migration-incomplete-after-upgrade.md)
 - [GitHub Actions failures caused by fork drift](incidents/009-github-actions-failures-from-fork-drift.md)
+- [Automated registration abuse using BoomProtocolProbe](incidents/010-automated-registration-abuse-boomprotocolprobe.md)
+- [OAuth application name blocklist](runbooks/oauth-application-name-blocklist.md)
 
 ## Production Environment
 

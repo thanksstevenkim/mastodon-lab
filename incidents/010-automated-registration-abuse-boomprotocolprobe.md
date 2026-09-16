@@ -503,6 +503,175 @@ At that point, the incident was considered contained and cleanup complete.
 
 Continued monitoring remained necessary because indicators such as the OAuth application name and User-Agent can be changed easily.
 
+# Recurrence — 2026-09-15 to 2026-09-16
+
+Several days after the initial cleanup, automated registrations associated with
+`BoomProtocolProbe` appeared again.
+
+The registrations showed the same indicators observed during the original incident:
+
+- randomized usernames beginning with patterns such as `bp`
+- signup reason: `Automated protocol deliverability probe`
+- signup application: `BoomProtocolProbe`
+
+At the time of detection, the Mastodon administration dashboard showed:
+
+```text
+BoomProtocolProbe => 13 registrations
+```
+
+Unlike the initial incident, the recurrence occurred at a relatively low rate
+over a longer period.
+
+This demonstrated a limitation of the existing Nginx rate limits.
+
+The per-IP and global registration rate limits remained useful against bursts,
+but low-rate automated requests could remain below the configured thresholds.
+
+As a result, lowering the rate limits further was not considered an appropriate
+primary mitigation because sufficiently strict global limits could also interfere
+with legitimate OAuth application registration.
+
+## OAuth application name blocklist
+
+A configurable OAuth application-name blocklist was added to the Mastodon fork.
+
+The blocklist is configured through:
+
+```text
+BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+```
+
+Blocking is enforced at two points:
+
+1. creation of a new OAuth application through `/api/v1/apps`
+2. account registration through an already-existing blocked OAuth application
+
+This prevents both new applications using the blocked name and previously-created
+applications with that name from being used for additional registrations.
+
+The implementation was merged in:
+
+```text
+thanksstevenkim/mastodon-v2#4
+Add OAuth application name blocklist
+```
+
+The implementation was tested with:
+
+```text
+29 examples, 0 failures
+```
+
+and RuboCop reported:
+
+```text
+6 files inspected, no offenses detected
+```
+
+The blocklist is intended as an incident-specific mitigation and not as a complete
+anti-automation mechanism. OAuth application names are client-controlled and can
+be changed by the remote client.
+
+# OAuth Application Name Blocklist
+
+## Purpose
+
+This runbook documents the custom OAuth application-name blocklist used by the
+Mustard Mastodon fork.
+
+The feature was introduced after SUP-0010, where an automated client repeatedly
+registered OAuth applications named `BoomProtocolProbe` and used them to create
+pending accounts.
+
+The blocklist is intended for known, high-confidence OAuth application indicators.
+It is not a general bot-detection mechanism.
+
+## Configuration
+
+The blocklist is controlled through:
+
+```env
+BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+```
+
+Multiple names may be supplied as a comma-separated list:
+
+```env
+BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe,BadClient
+```
+
+Matching is:
+
+- exact
+- case-insensitive
+- whitespace-trimmed
+
+Substring matching is intentionally not used to reduce false positives.
+
+## Enforcement
+
+The blocklist is checked at two stages.
+
+### OAuth application registration
+
+`POST /api/v1/apps`
+
+Blocked client names receive HTTP 403 before a Doorkeeper application is created.
+
+### Account registration
+
+`AppSignUpService` checks the name of the OAuth application used for signup.
+
+This prevents an OAuth application created before the denylist was enabled from
+being reused to create accounts.
+
+## Tests
+
+Relevant tests:
+
+```bash
+RAILS_ENV=test DB_HOST=localhost DB_USER=mastodon_test DB_PASS='test-password' bundle exec rspec \
+  spec/lib/o_auth_application_name_blocklist_spec.rb \
+  spec/requests/api/v1/apps_spec.rb \
+  spec/services/app_sign_up_service_spec.rb
+```
+
+Verified result:
+
+```text
+29 examples, 0 failures
+```
+
+Style verification:
+
+```bash
+bundle exec rubocop \
+  app/lib/oauth_application_name_blocklist.rb \
+  app/controllers/api/v1/apps_controller.rb \
+  app/services/app_sign_up_service.rb \
+  spec/lib/o_auth_application_name_blocklist_spec.rb \
+  spec/requests/api/v1/apps_spec.rb \
+  spec/services/app_sign_up_service_spec.rb
+```
+
+Verified result:
+
+```text
+6 files inspected, no offenses detected
+```
+
+## Limitations
+
+Application names are supplied by clients and are easy to change.
+
+Therefore:
+
+- keep registration rate limiting enabled
+- continue monitoring OAuth application creation
+- do not treat application-name matching as attribution
+- add names only when there is strong incident-specific evidence
+
 # Monitoring Alert Issue
 
 During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
