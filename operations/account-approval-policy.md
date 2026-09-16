@@ -57,11 +57,19 @@ making approval-based registration operationally practical.
 
 ## Final Decision
 
-The instance continued using open registration while actively reviewing newly created accounts and suspending abusive accounts.
+Mustard currently uses approval-based registration.
+
+New registrations remain pending until they are reviewed through the Mastodon
+administration workflow and Signup Review Bot.
 
 ## Rationale
 
-Although moderation required additional effort, legitimate users could join immediately without waiting for manual approval.
+Approval-based registration adds some friction for legitimate users, but the
+Signup Review Bot reduces the operational cost by forwarding confirmed
+registrations to a private Matrix room for review.
+
+This provides a practical balance between preventing automated registrations
+from becoming active accounts and keeping the review workload manageable.
 
 ## Lessons Learned
 

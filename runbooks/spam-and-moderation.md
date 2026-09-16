@@ -68,11 +68,16 @@ Before taking action:
 
 Current policy:
 
-- Open registration
-- Manual review of suspicious accounts
-- Immediate suspension of abusive accounts
+- Approval-based registration
+- Email confirmation before moderator review
+- Signup Review Bot notifications through Matrix
+- Manual approval or rejection of pending accounts
 
-Approval-based registration is intentionally not used because it delays legitimate users and requires continuous manual approval.
+Approval-based registration is used to prevent automated registrations from
+becoming active accounts before moderator review.
+
+The Signup Review Bot reduces the need to continuously monitor the Mastodon
+administration interface.
 
 ---
 
