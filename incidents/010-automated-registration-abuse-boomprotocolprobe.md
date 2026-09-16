@@ -634,6 +634,51 @@ The production mitigation now blocks `BoomProtocolProbe` at both:
 
 The recurrence cleanup and production deployment were completed successfully.
 
+## Production verification
+
+Production verification was performed after the deployment.
+
+A test request attempted to create an OAuth application using the blocked name:
+
+```text
+BoomProtocolProbe
+```
+
+Nginx recorded the request as:
+
+```text
+"POST /api/v1/apps HTTP/2.0" 403
+```
+
+This confirmed that the blocklist was actively rejecting the application
+registration request in production.
+
+The running Mastodon `web` container was also checked from:
+
+```text
+/opt/mastodon
+```
+
+using:
+
+```bash
+docker compose exec web printenv BLOCKED_OAUTH_APP_NAMES
+```
+
+The container returned:
+
+```text
+BoomProtocolProbe
+```
+
+confirming that the production environment variable had been loaded successfully.
+
+Together, these checks verified that:
+
+1. the running `web` container loaded `BLOCKED_OAUTH_APP_NAMES`
+2. a blocked OAuth application name was rejected with HTTP 403
+3. the production mitigation was active after container recreation
+
 Existing Nginx per-IP and global registration rate limits remain in place as
 defense-in-depth.
 
