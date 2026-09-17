@@ -615,7 +615,7 @@ The production environment configuration is stored in:
 The following value was added:
 
 ```env
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe, dialect_signup_v1
 ```
 
 The Mastodon containers were then recreated from `/opt/mastodon` using:
@@ -627,7 +627,7 @@ docker compose up -d
 This applied the updated application code and environment configuration to the
 running production containers.
 
-The production mitigation now blocks `BoomProtocolProbe` at both:
+The production mitigation now blocks configured OAuth application names at both:
 
 1. OAuth application creation through `/api/v1/apps`
 2. account registration through an existing blocked OAuth application
@@ -641,7 +641,7 @@ Production verification was performed after the deployment.
 A test request attempted to create an OAuth application using the blocked name:
 
 ```text
-BoomProtocolProbe
+BoomProtocolProbe, dialect_signup_v1
 ```
 
 Nginx recorded the request as:
@@ -668,7 +668,7 @@ docker compose exec web printenv BLOCKED_OAUTH_APP_NAMES
 The container returned:
 
 ```text
-BoomProtocolProbe
+BoomProtocolProbe, dialect_signup_v1
 ```
 
 confirming that the production environment variable had been loaded successfully.
@@ -686,7 +686,7 @@ The application-name blocklist should not be treated as attribution or as a
 general-purpose anti-bot mechanism. If the automated client changes its
 application name, additional investigation and mitigation may be required.
 
-## Further recurrence — randomized OAuth application names
+## Further recurrence — randomized and generic OAuth application names
 
 A further recurrence was observed on 2026-09-16 UTC.
 
@@ -794,7 +794,7 @@ was used.
 The existing mitigation used an exact, case-insensitive OAuth application-name
 blocklist.
 
-At the time of this recurrence, known blocked names included:
+At the time of this recurrence, the configured blocked application names included:
 
 ```text
 BoomProtocolProbe
@@ -825,14 +825,56 @@ and User-Agent strings, the signup reason remained unchanged:
 Automated protocol deliverability probe
 ```
 
-A configurable exact-match signup-reason blocklist was therefore added as an
-additional application-level mitigation.
+### Signup-reason blocklist deployment and verification
 
-The intended configuration is:
+A configurable exact-match signup-reason blocklist was added and deployed as
+an additional application-level mitigation.
+
+Production was configured with:
 
 ```text
 BLOCKED_SIGNUP_REASONS=Automated protocol deliverability probe
 ```
+
+The running Mastodon `web` container was confirmed to have loaded the
+environment variable successfully.
+
+The application-level matcher was also verified directly in production:
+
+```text
+SignupReasonBlocklist.blocked?("Automated protocol deliverability probe")
+=> true
+```
+
+An end-to-end registration test was then performed using a temporary OAuth
+application and client-credentials token.
+
+A `POST /api/v1/accounts` request containing:
+
+```text
+reason=Automated protocol deliverability probe
+```
+
+was rejected with:
+
+```text
+HTTP 403
+```
+
+A subsequent database check confirmed that no user account was created by the
+blocked registration attempt.
+
+Nginx access logs also recorded the test request as an HTTP 403 response.
+
+The temporary OAuth application used for verification was removed after the
+test.
+
+Production verification therefore confirmed all of the following:
+
+1. `BLOCKED_SIGNUP_REASONS` was loaded by the running `web` container.
+2. `SignupReasonBlocklist` matched the configured reason.
+3. The actual `/api/v1/accounts` endpoint rejected the request with HTTP 403.
+4. No user account was created by the rejected request.
 
 This check is performed by `AppSignUpService` before the user and access token
 are created.
@@ -929,23 +971,38 @@ This issue did not cause the registration abuse itself, but it reduced the effec
 
 # Root Cause
 
-The immediate cause was automated use of Mastodon's public client-registration and account-registration API.
+The immediate cause was automated use of Mastodon's public OAuth application
+registration and account-registration APIs.
 
-The automated client repeatedly:
+During the initial activity, the automated client repeatedly:
 
-1. registered a new OAuth application named `BoomProtocolProbe`
-2. obtained authorization through the OAuth flow
-3. submitted a new account registration
-4. left the resulting account unconfirmed and pending
+1. registered new OAuth applications using the name `BoomProtocolProbe`
+2. obtained client credentials for those applications
+3. submitted account registrations through `/api/v1/accounts`
+4. left the resulting accounts unconfirmed and pending
+
+During later recurrences, the same general workflow continued while several
+observable attributes changed:
+
+- OAuth application names were randomized or made generic
+- OAuth application creation and account registration used different apparent
+  client IP addresses
+- the User-Agent changed from a Python HTTP client to a browser-like string
+
+The signup reason remained stable during the observed later recurrence:
+
+```text
+Automated protocol deliverability probe
+```
 
 The server permitted public OAuth application registration and account signup as expected by Mastodon.
 
 The incident therefore did not demonstrate exploitation of a Mastodon vulnerability or unauthorized access to the server.
 
-Two infrastructure conditions made investigation and mitigation more difficult:
+Two infrastructure and protocol characteristics made investigation and mitigation more difficult:
 
 - Nginx initially did not restore the original client IP from Cloudflare
-- per-IP rate limiting alone was ineffective against requests arriving from multiple distinct IP addresses
+- IP addresses, OAuth application names, and User-Agent strings were not stable identifiers for the automated registration workflow
 
 The identity, infrastructure, and precise purpose of the actor were not established.
 
@@ -964,7 +1021,10 @@ The investigation did not establish:
 
 The most accurate description is therefore:
 
-> An automated client repeatedly registered new OAuth applications named `BoomProtocolProbe`, then used those applications to create large numbers of pending accounts.
+> An automated client repeatedly registered OAuth applications and used them to
+> create pending Mastodon accounts. The initial activity used the application
+> name `BoomProtocolProbe`; later activity used randomized or generic application
+> names while retaining the same observed signup reason.
 
 # Follow-up
 
@@ -981,6 +1041,9 @@ The most accurate description is therefore:
 - Keep destructive account cleanup behind an incident-specific database backup
 - Prefer Mastodon's own deletion workers/services over direct database deletion
 - Keep the main Signup Review Bot alert as `m.text` so moderator-facing signup events generate mobile push notifications.
+- Keep the signup-reason blocklist enabled as an incident-specific mitigation
+- Do not rely on signup reasons as permanent blocking indicators; they are
+  client-controlled and can be changed
 
 # Lessons Learned
 
@@ -1005,3 +1068,6 @@ The most accurate description is therefore:
 - A contained incident does not imply attribution: observed automation, source IPs, and client identifiers should not be used to make unsupported claims about who operated the system.
 - Delivery of a Matrix event to a room does not guarantee that the event will generate a mobile push notification.
 - Use `m.text` for moderator-facing alerts that require attention, while keeping passive thread/status messages as `m.notice` to avoid notification noise.
+- Client-controlled registration fields such as OAuth application names,
+  User-Agent strings, and signup reasons can all change and should be treated as
+  temporary indicators rather than durable identities.

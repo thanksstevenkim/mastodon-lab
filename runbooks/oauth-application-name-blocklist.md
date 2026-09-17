@@ -218,6 +218,20 @@ Existing BoomProtocolProbe application
 Normal OAuth application names should continue through the existing registration
 flow.
 
+### Production verification
+
+After deployment, verify the mitigation at both the application and HTTP layers.
+
+The production deployment was verified by confirming that:
+
+- `BLOCKED_SIGNUP_REASONS` was present in the running `web` container
+- `SignupReasonBlocklist.blocked?()` returned `true` for the configured reason
+- an end-to-end `POST /api/v1/accounts` request returned HTTP 403
+- no user was created by the rejected registration request
+
+The temporary OAuth application used for the end-to-end test was deleted after
+verification.
+
 ## Existing Data
 
 Enabling the blocklist does not remove data that already exists.
