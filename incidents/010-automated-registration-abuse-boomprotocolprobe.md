@@ -686,6 +686,217 @@ The application-name blocklist should not be treated as attribution or as a
 general-purpose anti-bot mechanism. If the automated client changes its
 application name, additional investigation and mitigation may be required.
 
+## Further recurrence — randomized OAuth application names
+
+A further recurrence was observed on 2026-09-16 UTC.
+
+Unlike the earlier `BoomProtocolProbe` activity, the new registrations no longer
+used a single fixed OAuth application name.
+
+Four pending accounts were identified with the same registration reason used in
+the earlier incident:
+
+```text
+Automated protocol deliverability probe
+```
+
+The accounts were linked to the following OAuth applications:
+
+```text
+11216  sf-probe-114ba7c5
+11217  sf-probe-13e406a5
+11218  sf-probe-1fa94d36
+11219  Mastodon Web App
+```
+
+Three of the applications used randomized names beginning with `sf-probe-`,
+while one used the generic-looking name `Mastodon Web App`.
+
+All four accounts were:
+
+- unconfirmed
+- unapproved
+- pending moderator review
+- created through `POST /api/v1/accounts`
+- associated with the same signup reason:
+  `Automated protocol deliverability probe`
+
+The OAuth applications were created only a few seconds before their associated
+accounts:
+
+```text
+19:15:54  OAuth app 11216 created
+19:16:01  associated account created
+
+20:29:32  OAuth app 11217 created
+20:29:35  associated account created
+
+20:33:31  OAuth app 11218 created
+20:33:34  associated account created
+
+21:07:11  OAuth app 11219 created
+21:07:16  associated account created
+```
+
+All timestamps above are UTC.
+
+### Source IP separation
+
+Nginx logs showed that OAuth application creation and account registration were
+performed from different apparent client IP addresses.
+
+For example:
+
+```text
+124.159.225.211  POST /api/v1/apps      -> app 11216
+126.142.114.47   POST /api/v1/accounts  -> associated account
+
+195.138.118.41   POST /api/v1/apps      -> app 11217
+193.33.237.115   POST /api/v1/accounts  -> associated account
+
+143.137.167.42   POST /api/v1/apps      -> app 11218
+95.164.233.120   POST /api/v1/accounts  -> associated account
+
+58.3.238.102     POST /api/v1/apps      -> app 11219
+219.104.163.85   POST /api/v1/accounts  -> associated account
+```
+
+The application-registration and account-registration requests occurred only
+seconds apart, but originated from different apparent client IP addresses.
+
+This makes simple per-IP correlation less useful for identifying the full
+registration workflow.
+
+The logs do not establish whether the differing addresses were caused by
+proxies, VPNs, multiple hosts, a botnet, or another network architecture.
+
+### User-Agent change
+
+The earlier activity had been observed using:
+
+```text
+Python/3.10 aiohttp/3.14.3
+```
+
+The later recurrence instead presented the following browser-like User-Agent:
+
+```text
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/126.0.0.0 Safari/537.36
+```
+
+The User-Agent string alone does not establish that a real interactive browser
+was used.
+
+### Effect on the OAuth application-name blocklist
+
+The existing mitigation used an exact, case-insensitive OAuth application-name
+blocklist.
+
+At the time of this recurrence, known blocked names included:
+
+```text
+BoomProtocolProbe
+dialect_signup_v1
+```
+
+Because the new applications used randomized or generic names such as:
+
+```text
+sf-probe-114ba7c5
+sf-probe-13e406a5
+sf-probe-1fa94d36
+Mastodon Web App
+```
+
+they did not match the existing exact-name blocklist.
+
+This recurrence demonstrated a limitation of application-name-based blocking:
+application names are controlled by the registering client and can be changed
+without altering the rest of the registration workflow.
+
+### Stable signup-reason indicator
+
+Despite the changes to OAuth application names, apparent client IP addresses,
+and User-Agent strings, the signup reason remained unchanged:
+
+```text
+Automated protocol deliverability probe
+```
+
+A configurable exact-match signup-reason blocklist was therefore added as an
+additional application-level mitigation.
+
+The intended configuration is:
+
+```text
+BLOCKED_SIGNUP_REASONS=Automated protocol deliverability probe
+```
+
+This check is performed by `AppSignUpService` before the user and access token
+are created.
+
+The existing OAuth application-name blocklist remains in place as a separate
+defense-in-depth control.
+
+### Cleanup
+
+The four pending accounts were first reviewed and matched to OAuth application
+IDs `11216` through `11219`.
+
+All four were confirmed to be:
+
+- unapproved
+- unconfirmed
+- associated with the known probe signup reason
+
+The accounts were removed through Mastodon's normal account-deletion workflow
+using account suspension followed by `AccountDeletionWorker`.
+
+Direct PostgreSQL deletion was not used.
+
+After account deletion completed, the four associated OAuth applications were
+removed separately.
+
+Deletion of the applications also removed their associated Doorkeeper access
+tokens and access grants.
+
+Final verification returned:
+
+```text
+remaining_users: 0
+remaining_apps: 0
+pending_total: 0
+```
+
+The cleanup was therefore completed successfully.
+
+### Assessment
+
+The later recurrence showed that fixed OAuth application names should not be
+treated as stable identifiers for this activity.
+
+The observed workflow changed multiple superficial attributes:
+
+- OAuth application names were randomized or made generic
+- application creation and account registration used different apparent IPs
+- the User-Agent changed from a Python HTTP client to a browser-like string
+
+However, the signup reason remained stable across the observed registrations.
+
+The incident response therefore shifted from relying primarily on known OAuth
+application names toward layered controls that also include:
+
+- signup-reason blocking
+- OAuth application-name blocking
+- per-IP and global registration rate limits
+- approval-based registration
+- moderator review and Signup Review Bot notifications
+
+These controls remain defense-in-depth measures rather than proof of attacker
+identity or a complete prevention mechanism.
+
 # Monitoring Alert Issue
 
 During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
