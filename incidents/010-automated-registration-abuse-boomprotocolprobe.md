@@ -939,6 +939,212 @@ application names toward layered controls that also include:
 These controls remain defense-in-depth measures rather than proof of attacker
 identity or a complete prevention mechanism.
 
+## Post-mitigation OAuth application spray — 2026-09-17 to 2026-09-18
+
+After the signup-reason blocklist was deployed, further automated-looking OAuth
+application registration activity continued.
+
+Unlike the earlier recurrence, these applications did not use the fixed
+`BoomProtocolProbe` name or the randomized `sf-probe-*` pattern.
+
+Instead, generic application names were repeatedly used, including:
+
+```text
+Web
+Mastodon
+mastodon
+Mastodon Web
+Mastodon Web App
+Mastodon Client
+Mastodon for Web
+Fediverse
+```
+
+Despite the varying names, database inspection identified 102 OAuth applications
+sharing the same application fingerprint:
+
+```text
+redirect_uri: urn:ietf:wg:oauth:2.0:oob
+website: https://example.com
+scopes: read write
+confidential: true
+```
+
+No users were linked to these 102 applications.
+
+### Access-token acquisition
+
+Of the 102 applications, 95 obtained exactly one access token.
+
+All 95 tokens had:
+
+```text
+resource_owner_id: nil
+```
+
+This indicates application-level credentials rather than tokens associated with
+an authenticated Mastodon user.
+
+Timing analysis showed that token issuance occurred shortly after the associated
+OAuth application was created:
+
+```text
+applications with tokens: 95
+minimum delay:             0.54 seconds
+median delay:              2.19 seconds
+maximum delay:            10.24 seconds
+```
+
+The repeated application creation followed by credential acquisition within
+seconds strongly indicates an automated OAuth application-registration and
+credential-acquisition workflow.
+
+Seven applications in the group did not have an associated access token:
+
+```text
+11220
+11232
+11236
+11265
+11277
+11279
+11280
+```
+
+### Account-registration attempts
+
+Nginx logs for September 17 and September 18 showed:
+
+```text
+94 POST /api/v1/accounts requests returning HTTP 403
+```
+
+One of these requests was a manual `curl` verification performed during the
+incident response.
+
+The remaining 93 requests used the same browser-like User-Agent observed during
+the previous recurrence:
+
+```text
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/126.0.0.0 Safari/537.36
+```
+
+The account-registration requests occurred during the same periods in which
+matching OAuth applications and application-level access tokens were being
+created.
+
+Examples include:
+
+```text
+2026-09-18 03:03:06 UTC  OAuth application created
+2026-09-18 03:03:08 UTC  POST /api/v1/accounts -> 403
+
+2026-09-18 08:22:25 UTC  OAuth application created
+2026-09-18 08:22:26 UTC  POST /api/v1/accounts -> 403
+```
+
+The exact access token used for each HTTP request was not logged, so individual
+requests cannot be directly tied to individual applications from the available
+Nginx evidence.
+
+However, the repeated application creation, rapid token issuance, matching time
+windows, common application fingerprint, identical browser-like User-Agent, and
+lack of successfully created users strongly support the assessment that the
+applications were part of the same automated registration workflow.
+
+The observed HTTP 403 responses are also consistent with the deployed
+signup-reason blocklist preventing the account-creation stage.
+
+### OAuth application fingerprint blocklist
+
+Because OAuth application names had already changed during the incident, an
+additional block was implemented for the observed OAuth application fingerprint.
+
+The blocked fingerprint is:
+
+```text
+redirect_uri: urn:ietf:wg:oauth:2.0:oob
+website: https://example.com
+scopes: read write
+confidential: true
+```
+
+The implementation was merged in:
+
+```text
+thanksstevenkim/mastodon-v2#5
+Block known automated OAuth registration fingerprint
+```
+
+The fingerprint is enforced at two stages:
+
+1. `POST /api/v1/apps` rejects matching applications before they are persisted.
+2. `AppSignUpService` rejects account creation through an already-existing
+   application with the same fingerprint.
+
+The matcher normalizes redirect URI and scope values, including ordering and
+duplicate values, and normalizes website case and trailing slashes so that
+trivial representation changes do not bypass the exact fingerprint match.
+
+The implementation remains an incident-specific indicator control rather than a
+general-purpose bot-detection mechanism.
+
+A client can change one or more fingerprint fields and produce a different
+application fingerprint.
+
+### Production verification
+
+After the implementation passed CI and was deployed, all three application-level
+controls were verified from the production Mastodon `web` container:
+
+```text
+OAuthApplicationNameBlocklist         => true
+SignupReasonBlocklist                 => true
+OAuthApplicationFingerprintBlocklist  => true
+```
+
+An end-to-end request was then sent to:
+
+```text
+POST /api/v1/apps
+```
+
+using:
+
+```text
+client_name: FingerprintBlockTest
+redirect_uris: urn:ietf:wg:oauth:2.0:oob
+scopes: read write
+website: https://example.com
+```
+
+Production returned:
+
+```text
+HTTP 403
+{"error":"Forbidden"}
+```
+
+A subsequent database check returned:
+
+```text
+Doorkeeper::Application.where(name: "FingerprintBlockTest").count
+=> 0
+```
+
+This confirmed that the matching OAuth application was rejected before a
+Doorkeeper application record was created.
+
+Production verification therefore established that:
+
+1. the fingerprint matcher was loaded by the running application
+2. the observed fingerprint was classified as blocked
+3. `/api/v1/apps` returned HTTP 403
+4. no OAuth application was persisted
+5. the request could not proceed to application-level token acquisition
+
 # Monitoring Alert Issue
 
 During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
@@ -1006,6 +1212,19 @@ Two infrastructure and protocol characteristics made investigation and mitigatio
 
 The identity, infrastructure, and precise purpose of the actor were not established.
 
+After the signup-reason mitigation was deployed, automated-looking activity
+continued registering OAuth applications under generic names.
+
+A later group of 102 applications shared an identical OAuth application
+fingerprint, and 95 of them obtained application-level access tokens within
+seconds of creation. During the same observed period, repeated
+`/api/v1/accounts` requests were rejected with HTTP 403 and no users were
+created through those applications.
+
+This demonstrated that application names alone were not a stable indicator and
+that structural OAuth application attributes could provide an additional
+incident-specific detection and blocking signal.
+
 # What Was Not Confirmed
 
 The investigation did not establish:
@@ -1044,6 +1263,11 @@ The most accurate description is therefore:
 - Keep the signup-reason blocklist enabled as an incident-specific mitigation
 - Do not rely on signup reasons as permanent blocking indicators; they are
   client-controlled and can be changed
+- Keep the observed OAuth application fingerprint block enabled while it
+  remains relevant to SUP-0010
+- Treat OAuth application fingerprints as incident-specific indicators rather
+  than durable identities; clients can change redirect URIs, websites, scopes,
+  or other application metadata
 
 # Lessons Learned
 
@@ -1071,3 +1295,12 @@ The most accurate description is therefore:
 - Client-controlled registration fields such as OAuth application names,
   User-Agent strings, and signup reasons can all change and should be treated as
   temporary indicators rather than durable identities.
+
+- Correlating OAuth application creation timestamps with access-token issuance
+  and account-registration requests can reveal automated workflows even when
+  application names and source IP addresses change.
+- Repeated OAuth applications with identical redirect URI, website, scopes,
+  and confidentiality settings can provide a stronger incident indicator than
+  application name alone.
+- Blocking a known abusive fingerprint earlier at `/api/v1/apps` prevents new
+  matching OAuth application and access-token records from accumulating.

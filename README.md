@@ -32,6 +32,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [GitHub Actions failures caused by fork drift](incidents/009-github-actions-failures-from-fork-drift.md)
 - [Automated registration abuse using BoomProtocolProbe](incidents/010-automated-registration-abuse-boomprotocolprobe.md)
 - [OAuth application name blocklist](runbooks/oauth-application-name-blocklist.md)
+- [OAuth application fingerprint blocklist](runbooks/oauth-application-fingerprint-blocklist.md)
 
 ## Production Environment
 
