@@ -274,6 +274,36 @@ or `Web`, because those names can also be used by unrelated clients.
 
 Preserve evidence and verify the selection before destructive cleanup.
 
+For SUP-0010, production cleanup followed this sequence after evidence
+preservation and mitigation deployment:
+
+1. re-query the exact fingerprint and confirm the expected application count
+2. confirm that no users are linked to the selected applications
+3. record associated access-token and access-grant counts
+4. remove the selected applications with `destroy_all`
+5. verify that unrelated applications in the same numeric ID range remain intact
+
+The final pre-cleanup selection contained:
+
+```text
+102 OAuth applications
+0 linked users
+95 access tokens
+0 access grants
+```
+
+After deletion, two tokens still present within the broader application ID
+range were traced to unrelated `FediSuite` applications and were preserved.
+
+A separate set of four suspicious accounts linked to three different OAuth
+applications was cleaned up independently. Those user accounts were removed
+through Mastodon's suspension and `AccountDeletionWorker` path first. Only
+after the users were gone were the three OAuth applications and their associated
+tokens removed.
+
+This ordering preserves application-to-user evidence until account cleanup is
+complete and reduces the risk of deleting unrelated OAuth clients.
+
 ## Relationship to Other Controls
 
 The fingerprint block is one layer in the registration-abuse mitigation stack.

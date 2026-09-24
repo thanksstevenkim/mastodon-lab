@@ -1145,6 +1145,135 @@ Production verification therefore established that:
 4. no OAuth application was persisted
 5. the request could not proceed to application-level token acquisition
 
+### Cleanup of post-mitigation OAuth application spray
+
+After the fingerprint block was deployed and production verification completed,
+the previously-created OAuth applications matching the observed fingerprint were
+cleaned up.
+
+A final pre-cleanup query selected applications using both the incident time/ID
+range and the complete fingerprint:
+
+```text
+redirect_uri: urn:ietf:wg:oauth:2.0:oob
+website: https://example.com
+scopes: read write
+confidential: true
+```
+
+The final selection returned:
+
+```text
+applications: 102
+linked_users: 0
+access_tokens: 95
+access_grants: 0
+first_id: 11220
+last_id: 11325
+```
+
+The applications were removed through the Rails/Doorkeeper model using
+`destroy_all` rather than direct SQL deletion.
+
+The destruction path removed associated Doorkeeper access tokens and access
+grants before deleting each application.
+
+After cleanup, no matching fingerprint applications remained.
+
+A wider token check across application IDs `11220..11325` returned two
+remaining tokens, both belonging to unrelated `FediSuite` applications:
+
+```text
+11315  FediSuite
+11316  FediSuite
+```
+
+Both applications used:
+
+```text
+website: https://fedi.adminforge.de
+redirect_uri: https://fedi.adminforge.de/api/auth/fediverse/callback
+scopes: read write push
+```
+
+These did not match the suspicious fingerprint and were intentionally preserved.
+
+This verified that the 102 identified spray applications and their 95 associated
+application-level tokens had been removed without deleting unrelated OAuth
+clients in the same numeric ID range.
+
+### Cleanup of separately reviewed suspicious registrations
+
+During follow-up investigation, four additional suspicious local accounts were
+reviewed separately from the 102-application fingerprint spray:
+
+```text
+scarletpoppy -> application 11328, Registration
+htpfapvnn    -> application 11329, lightgraytime
+mefdlt       -> application 11331, hyenastack
+ByxavLel     -> application 11331, hyenastack
+```
+
+These registrations did not use the same OAuth fingerprint as the 102
+applications above and are therefore not attributed to the same automated
+workflow solely on that basis.
+
+Before cleanup, all four accounts were confirmed and approved but had:
+
+```text
+statuses: 0
+following: 0
+followers: 0
+```
+
+Their `created_by_application_id` mappings were rechecked immediately before
+deletion.
+
+The accounts were then removed through Mastodon's normal account-deletion path:
+
+```ruby
+account.suspend!(origin: :local)
+
+AccountDeletionWorker.perform_async(
+  account.id,
+  { "reserve_username" => false }
+)
+```
+
+After Sidekiq completed the deletions, verification returned:
+
+```text
+remaining_target_users: 0
+users_still_linked_to_apps: 0
+target_apps: 3
+```
+
+The three OAuth applications were intentionally retained until account deletion
+completed so that the application-to-user relationship remained available
+throughout the user cleanup.
+
+Immediately before OAuth application cleanup, the three applications had:
+
+```text
+apps: 3
+tokens: 3
+grants: 0
+```
+
+Applications `11328`, `11329`, and `11331` were then removed using
+`Doorkeeper::Application#destroy` through `destroy_all`.
+
+Final verification returned:
+
+```text
+remaining_apps: 0
+remaining_tokens: 0
+remaining_grants: 0
+```
+
+This completed cleanup of the separately reviewed account/application set while
+leaving unrelated registrations and OAuth clients untouched.
+
 # Monitoring Alert Issue
 
 During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
