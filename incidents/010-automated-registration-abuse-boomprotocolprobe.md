@@ -340,28 +340,19 @@ sha256sum ~/backups/incidents/SUP-0010/mastodon_production-before-cleanup.sql \
 
 ## Per-IP registration rate limiting
 
-Nginx rate-limit zones were first added for the two registration endpoints:
+Nginx rate limits were added for both registration endpoints:
 
-```nginx
-limit_req_zone $binary_remote_addr zone=mastodon_app_registration:10m rate=2r/m;
-limit_req_zone $binary_remote_addr zone=mastodon_account_registration:10m rate=2r/m;
+```text
+POST /api/v1/apps
+POST /api/v1/accounts
 ```
 
-The following endpoint-specific limits were applied:
+Both endpoints use per-client limits and return HTTP 429 when the configured
+thresholds are exceeded.
 
-```nginx
-location = /api/v1/apps {
-  limit_req zone=mastodon_app_registration burst=3 nodelay;
-  limit_req_status 429;
-  try_files $uri @proxy;
-}
-
-location = /api/v1/accounts {
-  limit_req zone=mastodon_account_registration burst=3 nodelay;
-  limit_req_status 429;
-  try_files $uri @proxy;
-}
-```
+The exact production rates and burst allowances are intentionally omitted from
+the public incident report. They are operational security parameters rather
+than requirements for reproducing the investigation.
 
 The configuration passed `nginx -t` and was successfully reloaded.
 
@@ -371,30 +362,10 @@ As a result, a per-IP limit alone did not materially stop the activity.
 
 ## Global registration rate limiting
 
-Additional endpoint-wide rate limits were introduced:
+Endpoint-wide limits were then added in addition to the per-client limits.
 
-```nginx
-limit_req_zone $server_name zone=mastodon_app_registration_global:10m rate=2r/m;
-limit_req_zone $server_name zone=mastodon_account_registration_global:10m rate=2r/m;
-```
-
-They were combined with the existing per-IP limits:
-
-```nginx
-location = /api/v1/apps {
-  limit_req zone=mastodon_app_registration burst=3 nodelay;
-  limit_req zone=mastodon_app_registration_global burst=3 nodelay;
-  limit_req_status 429;
-  try_files $uri @proxy;
-}
-
-location = /api/v1/accounts {
-  limit_req zone=mastodon_account_registration burst=3 nodelay;
-  limit_req zone=mastodon_account_registration_global burst=3 nodelay;
-  limit_req_status 429;
-  try_files $uri @proxy;
-}
-```
+The public report records the layered design but intentionally omits the current
+production thresholds and burst allowances.
 
 The observed request rate was sufficiently low that requests could still fit within the configured rate and burst allowance.
 
@@ -547,7 +518,7 @@ A configurable OAuth application-name blocklist was added to the Mastodon fork.
 The blocklist is configured through:
 
 ```text
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+BLOCKED_OAUTH_APP_NAMES=<incident-specific values omitted>
 ```
 
 Blocking is enforced at two points:
@@ -615,7 +586,7 @@ The production environment configuration is stored in:
 The following value was added:
 
 ```env
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe, dialect_signup_v1
+BLOCKED_OAUTH_APP_NAMES=<incident-specific values omitted>
 ```
 
 The Mastodon containers were then recreated from `/opt/mastodon` using:
@@ -638,11 +609,8 @@ The recurrence cleanup and production deployment were completed successfully.
 
 Production verification was performed after the deployment.
 
-A test request attempted to create an OAuth application using the blocked name:
-
-```text
-BoomProtocolProbe, dialect_signup_v1
-```
+A test request attempted to create an OAuth application using a configured
+blocked name.
 
 Nginx recorded the request as:
 
@@ -665,13 +633,8 @@ using:
 docker compose exec web printenv BLOCKED_OAUTH_APP_NAMES
 ```
 
-The container returned:
-
-```text
-BoomProtocolProbe, dialect_signup_v1
-```
-
-confirming that the production environment variable had been loaded successfully.
+The command confirmed that the configured blocklist was present in the running
+container. The live values are intentionally omitted from the public report.
 
 Together, these checks verified that:
 
@@ -833,7 +796,7 @@ an additional application-level mitigation.
 Production was configured with:
 
 ```text
-BLOCKED_SIGNUP_REASONS=Automated protocol deliverability probe
+BLOCKED_SIGNUP_REASONS=<incident-specific values omitted>
 ```
 
 The running Mastodon `web` container was confirmed to have loaded the

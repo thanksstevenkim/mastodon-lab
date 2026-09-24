@@ -57,6 +57,11 @@ The commands and configuration in this repository describe one production enviro
 
 Secrets, credentials, personal data, and environment-specific configuration values are intentionally excluded.
 
+Live security-control parameters are also intentionally excluded where publishing
+them would make active defenses easier to tune around. This includes exact
+production rate-limit thresholds, active IOC/blocklist values, raw access logs,
+and reproduction payloads that depend on current production-only indicators.
+
 ## What This Repository Represents
 
 Operating a production service involves more than deploying software. This repository records the investigation, documentation, and process improvements used to make an independently operated service more reliable over time.

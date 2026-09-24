@@ -9,14 +9,11 @@ The feature was introduced during SUP-0010 after automated registration activity
 changed OAuth application names while continuing to create large numbers of
 applications with the same underlying OAuth metadata.
 
-Database inspection identified 102 applications sharing the same fingerprint:
+Database inspection identified 102 applications sharing the same OAuth
+fingerprint across redirect URI, website, scopes, and confidentiality settings.
 
-```text
-redirect_uri: urn:ietf:wg:oauth:2.0:oob
-website: https://example.com
-scopes: read write
-confidential: true
-```
+The exact currently blocked production fingerprint is intentionally omitted from
+this public runbook.
 
 Of those applications, 95 obtained application-level access tokens shortly after
 creation.
@@ -29,17 +26,13 @@ system.
 
 ## Observed Fingerprint
 
-The currently blocked fingerprint is:
+The block matches the complete combination of redirect URI, website, scopes,
+and confidentiality rather than blocking any individual field.
 
-```text
-redirect_uri: urn:ietf:wg:oauth:2.0:oob
-website: https://example.com
-scopes: read write
-confidential: true
-```
-
-The block matches the complete combination rather than blocking any individual
-field.
+Exact live IOC values are kept out of the public operations documentation.
+Historical counts and matcher behavior remain documented because they are useful
+for understanding the incident without exposing a copy-paste production test
+case.
 
 This is important because values such as an OOB redirect URI or common OAuth
 scopes can also appear in legitimate applications.
@@ -129,18 +122,9 @@ For the website value it:
 - compares case-insensitively by lowercasing the value
 - removes trailing slashes
 
-This prevents trivial representation changes such as:
-
-```text
-read write
-write read
-write read read
-
-https://example.com
-https://example.com/
-```
-
-from bypassing the observed fingerprint match.
+This prevents trivial representation differences in scope ordering, duplicate
+scope values, URL casing, or trailing slashes from bypassing the observed
+fingerprint match.
 
 The matcher does not attempt broad URL canonicalization or behavioral
 classification.
@@ -204,62 +188,21 @@ docker compose up -d
 
 ## Verification
 
-### Matcher verification
+### Production verification
 
-The production matcher can be checked from the running `web` container:
+Verify the matcher from the running application container using the current
+private IOC values, then perform an end-to-end request that should return HTTP
+403 and confirm that no Doorkeeper application was persisted.
 
-```bash
-docker compose exec web bin/rails runner \
-  'puts OAuthApplicationFingerprintBlocklist.blocked?(
-    redirect_uris: "urn:ietf:wg:oauth:2.0:oob",
-    website: "https://example.com",
-    scopes: "read write",
-    confidential: true
-  )'
-```
+Exact production IOC values and copy-paste request payloads are intentionally
+omitted from this public runbook. The verification should still cover all three
+properties:
 
-Expected result:
+1. the matcher classifies the configured fingerprint as blocked
+2. `POST /api/v1/apps` returns HTTP 403
+3. the rejected application is not persisted
 
-```text
-true
-```
-
-### End-to-end verification
-
-A matching test request can be sent to `POST /api/v1/apps`:
-
-```bash
-curl -i -X POST https://mustard.blog/api/v1/apps \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "client_name": "FingerprintBlockTest",
-    "redirect_uris": "urn:ietf:wg:oauth:2.0:oob",
-    "scopes": "read write",
-    "website": "https://example.com"
-  }'
-```
-
-Expected result:
-
-```text
-HTTP 403
-{"error":"Forbidden"}
-```
-
-Then confirm that the application was not persisted:
-
-```bash
-docker compose exec web bin/rails runner \
-  'puts Doorkeeper::Application.where(name: "FingerprintBlockTest").count'
-```
-
-Expected result:
-
-```text
-0
-```
-
-This exact production verification was completed successfully after deployment.
+This verification was completed successfully after deployment.
 
 ## Existing Data
 

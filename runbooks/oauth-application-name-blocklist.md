@@ -29,13 +29,13 @@ Mustard loads Mastodon environment variables from:
 Blocked OAuth application names are configured using:
 
 ```env
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+BLOCKED_OAUTH_APP_NAMES=ExampleBlockedClient
 ```
 
 Multiple application names may be supplied as a comma-separated list:
 
 ```env
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe,BadClient
+BLOCKED_OAUTH_APP_NAMES=ExampleBlockedClient,AnotherBlockedClient
 ```
 
 Matching is:
@@ -172,11 +172,13 @@ Edit the Mastodon production environment file:
 /opt/mastodon/.env.mastodon
 ```
 
-Add or update:
+Add or update the variable using the current incident-specific values:
 
 ```env
-BLOCKED_OAUTH_APP_NAMES=BoomProtocolProbe
+BLOCKED_OAUTH_APP_NAMES=<private production values>
 ```
+
+Do not copy active production IOC values into public documentation.
 
 Then recreate the Mastodon containers:
 
@@ -204,14 +206,13 @@ docker compose ps
 The configured environment variable can also be checked from the application
 container if necessary.
 
-The expected production behavior for a blocked name is:
+The expected production behavior for any configured blocked name is:
 
 ```text
-OAuth application creation
-BoomProtocolProbe
+New OAuth application using a blocked name
 → rejected
 
-Existing BoomProtocolProbe application
+Existing OAuth application using a blocked name
 → account registration rejected
 ```
 
@@ -224,13 +225,13 @@ After deployment, verify the mitigation at both the application and HTTP layers.
 
 The production deployment was verified by confirming that:
 
-- `BLOCKED_SIGNUP_REASONS` was present in the running `web` container
-- `SignupReasonBlocklist.blocked?()` returned `true` for the configured reason
-- an end-to-end `POST /api/v1/accounts` request returned HTTP 403
-- no user was created by the rejected registration request
+- `BLOCKED_OAUTH_APP_NAMES` was present in the running `web` container
+- the application-name matcher returned `true` for a configured test value
+- an end-to-end `POST /api/v1/apps` request returned HTTP 403
+- no OAuth application was created by the rejected request
 
-The temporary OAuth application used for the end-to-end test was deleted after
-verification.
+The active production blocklist values are intentionally not reproduced in this
+public runbook.
 
 ## Existing Data
 
@@ -290,14 +291,8 @@ No single control should be treated as sufficient on its own.
 
 OAuth application names are supplied by remote clients and are easy to change.
 
-An automated client that changes:
-
-```text
-BoomProtocolProbe
-```
-
-to another application name can bypass an exact-name denylist until the new
-indicator is identified.
+An automated client that changes its application name can bypass an exact-name
+denylist until the new indicator is identified.
 
 The blocklist therefore should not be treated as:
 
