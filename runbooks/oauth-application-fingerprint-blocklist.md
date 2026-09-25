@@ -247,6 +247,58 @@ tokens removed.
 This ordering preserves application-to-user evidence until account cleanup is
 complete and reduces the risk of deleting unrelated OAuth clients.
 
+## Workflow-Level Correlation
+
+Exact OAuth fingerprints are useful incident-specific controls, but a client can
+change individual metadata fields and produce a new fingerprint.
+
+When a suspicious registration does not match a known fingerprint, correlate the
+full OAuth workflow before deciding whether it belongs to the same cleanup set.
+
+Useful relationships include:
+
+- OAuth application creation time
+- application-level access-token issuance
+- local account creation time
+- `created_by_application_id`
+- user-bound access-token issuance
+- number of local users linked to the same application
+- confirmation and approval state
+- account activity counts
+
+A particularly useful sequence to investigate is:
+
+```text
+new OAuth application
+        |
+        v
+application-level token
+        |
+        v
+local account
+        |
+        v
+user-bound token
+        |
+        v
+same application reused for additional accounts
+```
+
+This sequence should be treated as behavioral evidence rather than attribution.
+It does not prove that two incidents share an operator merely because their
+workflows resemble one another.
+
+Public documentation should describe the correlation method and verified counts
+without publishing active production IOC values or copy-paste bypass details.
+
+When cleanup is required, preserve the application-to-user relationship until
+the linked accounts have been removed and verified. Then remove the now-unlinked
+OAuth application and verify that its associated tokens and grants are gone.
+
+The 2026-09-24 SUP-0010 follow-up used this ordering for a reused OAuth
+application linked to two pending accounts. Final verification showed zero
+remaining target users, applications, associated tokens, and grants.
+
 ## Relationship to Other Controls
 
 The fingerprint block is one layer in the registration-abuse mitigation stack.
