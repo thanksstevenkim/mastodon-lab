@@ -1323,13 +1323,42 @@ A separate pending registration observed in the same broader period had no
 `created_by_application_id` and was therefore not grouped with this OAuth
 workflow based on the available evidence.
 
-## Status
+## Cleanup and Final Verification
 
-At the time this section was written, the two linked accounts and their OAuth
-application were still being handled as a separate review and cleanup set.
+After the application-to-user relationships and token ownership were verified,
+the two linked local accounts were removed first through Mastodon's normal
+account-deletion path.
 
-Destructive cleanup is intentionally documented only after application-to-user
-relationships, token ownership, and final target scope have been verified.
+The OAuth application was deliberately retained until account deletion
+completed so that the application-to-user relationship remained available
+during cleanup.
+
+After Sidekiq completed the account deletions, verification confirmed that:
+
+```text
+remaining target users: 0
+users still linked to the reviewed application: 0
+reviewed OAuth application still present: 1
+```
+
+The now-unlinked OAuth application was then removed through the Doorkeeper/Rails
+model rather than direct SQL deletion. Associated access tokens and access
+grants were handled by the application destruction path.
+
+Final verification returned:
+
+```text
+remaining target users: 0
+remaining reviewed OAuth applications: 0
+remaining associated access tokens: 0
+remaining associated access grants: 0
+```
+
+This completed cleanup of the two-account workflow-reuse set.
+
+The separate pending registration without a `created_by_application_id` was not
+included in this cleanup because the available evidence did not connect it to
+the reviewed OAuth workflow.
 
 # Monitoring Alert Issue
 

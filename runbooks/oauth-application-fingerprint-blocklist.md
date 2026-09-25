@@ -291,6 +291,14 @@ workflows resemble one another.
 Public documentation should describe the correlation method and verified counts
 without publishing active production IOC values or copy-paste bypass details.
 
+When cleanup is required, preserve the application-to-user relationship until
+the linked accounts have been removed and verified. Then remove the now-unlinked
+OAuth application and verify that its associated tokens and grants are gone.
+
+The 2026-09-24 SUP-0010 follow-up used this ordering for a reused OAuth
+application linked to two pending accounts. Final verification showed zero
+remaining target users, applications, associated tokens, and grants.
+
 ## Relationship to Other Controls
 
 The fingerprint block is one layer in the registration-abuse mitigation stack.
