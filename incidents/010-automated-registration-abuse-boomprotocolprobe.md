@@ -1360,6 +1360,114 @@ The separate pending registration without a `created_by_application_id` was not
 included in this cleanup because the available evidence did not connect it to
 the reviewed OAuth workflow.
 
+# Web Signup Fallback After API Signup Blocking
+
+After the OAuth workflow recurrence, production was changed so direct account
+creation through the public API registration endpoint was rejected at the
+reverse-proxy layer.
+
+This stopped the previously observed OAuth-driven account-creation path, but a
+later pending registration showed that the automation could fall back to the
+normal browser registration flow instead.
+
+## Observed fallback sequence
+
+The public incident record intentionally omits the source IP address, email
+address, exact User-Agent strings, and account-identifying details.
+
+The relevant access-log sequence was:
+
+```text
+POST /api/v1/accounts -> HTTP 403
+~1 second later: GET /auth/sign_up
+rules acceptance
+signup form reload with acceptance token
+username availability lookup
+POST /auth -> account created
+/auth/setup
+email confirmation
+```
+
+The API request and subsequent browser-signup sequence came from the same
+apparent client address. The User-Agent also changed between the rejected API
+request and the browser flow.
+
+The resulting account had:
+
+```text
+created_by_application_id: nil
+approved: false
+statuses: 0
+following: 0
+followers: 0
+```
+
+Because the account was created through the normal web registration path, it was
+not linked to the previously reviewed OAuth application set.
+
+The sequence nevertheless provided strong evidence that blocking the API signup
+path alone was insufficient: the automated client could switch to the browser
+registration workflow.
+
+## Existing web anti-spam controls
+
+The web signup form already included Mastodon's built-in anti-spam controls:
+
+- hidden honeypot fields
+- a minimum registration-form dwell time
+- approval-based registration
+
+The observed registration still completed successfully.
+
+This demonstrated that those controls were useful but insufficient against a
+client capable of reproducing the normal browser workflow.
+
+## Pre-registration hCaptcha mitigation
+
+Mastodon's existing hCaptcha integration originally ran during email
+confirmation. That could challenge a registrant before confirmation, but the
+local user record had already been created by that point.
+
+For this incident, the custom Mastodon fork was changed so browser
+registrations must pass hCaptcha before Devise persists the account.
+
+The implementation was merged through:
+
+```text
+thanksstevenkim/mastodon-v2#6
+Require hCaptcha before web account creation
+```
+
+The change:
+
+- reuses the existing `Auth::CaptchaConcern`
+- renders hCaptcha in the browser signup form
+- verifies the challenge before the account-creation path runs
+- prevents a failed CAPTCHA submission from creating a local user
+- avoids asking web-created users to solve the same CAPTCHA again during email
+  confirmation
+- preserves the existing confirmation-stage CAPTCHA behavior for app-created
+  registrations
+
+The change passed CI before merge and was rebuilt and deployed to production.
+
+Production verification confirmed that hCaptcha was displayed and functional on
+the signup form before account creation.
+
+The direct API signup block remained in place as a separate layer.
+
+## Cleanup
+
+The reviewed web-fallback account was not approved and was removed after the
+browser-flow investigation was complete.
+
+No OAuth application cleanup was required for that account because
+`created_by_application_id` was null.
+
+A different pending web registration observed during the same period was not
+automatically grouped into this cleanup set because the available evidence did
+not establish the same browser-fallback sequence.
+
 # Monitoring Alert Issue
 
 During the incident, Signup Review Bot messages were successfully delivered to the Matrix review room, but the administrator's iPhone did not generate push notifications for automated signup alerts.
@@ -1483,6 +1591,12 @@ The most accurate description is therefore:
 - Treat OAuth application fingerprints as incident-specific indicators rather
   than durable identities; clients can change redirect URIs, websites, scopes,
   or other application metadata
+- Keep direct API account creation disabled while web-only registration is the
+  intended signup path
+- Keep pre-registration hCaptcha enabled for browser signups and verify that
+  failed challenges do not persist users
+- Monitor whether suspicious registrations continue after pre-registration
+  CAPTCHA deployment before adding further complexity
 
 # Lessons Learned
 
@@ -1523,6 +1637,14 @@ The most accurate description is therefore:
 - IOC-specific controls should be paired with workflow-level monitoring because
   remote clients can change static OAuth metadata without changing the broader
   registration sequence.
+- Blocking one registration transport does not guarantee that automation stops;
+  a capable client may fall back from API signup to the browser signup flow.
+- CAPTCHA placement matters: a challenge during email confirmation can reduce
+  confirmed abuse but does not prevent the pending user record from being
+  created first.
+- For browser-signup abuse, placing hCaptcha before persistence provides a
+  stronger control than increasing the minimum form dwell time, which an
+  automated client can simply wait out.
 - Repeated OAuth applications with identical redirect URI, website, scopes,
   and confidentiality settings can provide a stronger incident indicator than
   application name alone.

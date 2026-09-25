@@ -33,6 +33,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [Automated registration abuse using BoomProtocolProbe](incidents/010-automated-registration-abuse-boomprotocolprobe.md)
 - [OAuth application name blocklist](runbooks/oauth-application-name-blocklist.md)
 - [OAuth application fingerprint blocklist](runbooks/oauth-application-fingerprint-blocklist.md)
+- [Pre-registration hCaptcha for web signup](runbooks/pre-registration-hcaptcha.md)
 
 ## Production Environment
 
