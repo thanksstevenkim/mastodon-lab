@@ -1115,14 +1115,10 @@ the previously-created OAuth applications matching the observed fingerprint were
 cleaned up.
 
 A final pre-cleanup query selected applications using both the incident time/ID
-range and the complete fingerprint:
+range and the complete incident-specific fingerprint.
 
-```text
-redirect_uri: urn:ietf:wg:oauth:2.0:oob
-website: https://example.com
-scopes: read write
-confidential: true
-```
+The exact live fingerprint values are intentionally omitted from this public
+incident report.
 
 The final selection returned:
 
@@ -1236,6 +1232,104 @@ remaining_grants: 0
 
 This completed cleanup of the separately reviewed account/application set while
 leaving unrelated registrations and OAuth clients untouched.
+
+# Further Recurrence — OAuth Workflow Reuse with Changed Indicators
+
+On 2026-09-24 UTC, another suspicious pending registration was observed after
+the earlier IOC-specific mitigations and cleanup had been completed.
+
+The new registration did not match the previously documented exact OAuth
+fingerprint, application-name indicator, or signup-reason indicator.
+
+Public documentation intentionally omits the current application name, website,
+signup-reason strings, email addresses, source IP addresses, and exact live IOC
+values.
+
+## OAuth and token sequence
+
+Database inspection showed a newly-created OAuth application followed by an
+application-level access token and a pending local account within seconds.
+
+The observed sequence was:
+
+```text
+OAuth application created
+~1.7 seconds later: application-level access token issued
+~3.8 seconds later: first local account created
+immediately after account creation: user-bound access token issued
+```
+
+The first account was email-confirmed but remained unapproved.
+
+Approximately three and a half hours later, the same OAuth application was
+reused to create a second local account, again followed immediately by a
+user-bound access token.
+
+At the time of review, the application had:
+
+```text
+linked users: 2
+access tokens: 3
+access grants: 0
+```
+
+The three access tokens consisted of:
+
+```text
+1 application-level token with no resource owner
+2 user-bound tokens, one for each linked local account
+```
+
+Both linked accounts remained unapproved and had:
+
+```text
+statuses: 0
+following: 0
+followers: 0
+```
+
+One linked account had confirmed its email address, while the second had not.
+
+## Assessment
+
+The token ownership and timing pattern is consistent with an automated OAuth
+registration workflow:
+
+```text
+register OAuth application
+        |
+        v
+obtain application-level credentials
+        |
+        v
+create local account
+        |
+        v
+obtain user-bound token
+        |
+        v
+reuse the same application for another account
+```
+
+This recurrence is significant because the static indicators differed from the
+previously blocked patterns while the higher-level application/token/account
+workflow remained similar.
+
+The evidence supports describing the activity as automated-looking OAuth-driven
+registration abuse. It does not establish that the same actor, infrastructure,
+or software was responsible for earlier SUP-0010 activity.
+
+A separate pending registration observed in the same broader period had no
+`created_by_application_id` and was therefore not grouped with this OAuth
+workflow based on the available evidence.
+
+## Status
+
+At the time this section was written, the two linked accounts and their OAuth
+application were still being handled as a separate review and cleanup set.
+
+Destructive cleanup is intentionally documented only after application-to-user
+relationships, token ownership, and final target scope have been verified.
 
 # Monitoring Alert Issue
 
@@ -1391,6 +1485,15 @@ The most accurate description is therefore:
 - Correlating OAuth application creation timestamps with access-token issuance
   and account-registration requests can reveal automated workflows even when
   application names and source IP addresses change.
+- Access-token ownership provides another useful correlation layer: an
+  application-level token followed by user-bound tokens can expose the sequence
+  from OAuth client registration to account creation.
+- Reuse of one newly-created OAuth application across multiple unrelated pending
+  accounts is a higher-signal behavioral indicator than application name,
+  signup reason, or website metadata alone.
+- IOC-specific controls should be paired with workflow-level monitoring because
+  remote clients can change static OAuth metadata without changing the broader
+  registration sequence.
 - Repeated OAuth applications with identical redirect URI, website, scopes,
   and confidentiality settings can provide a stronger incident indicator than
   application name alone.
