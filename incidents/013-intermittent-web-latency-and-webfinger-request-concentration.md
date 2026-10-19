@@ -121,6 +121,36 @@ Cloudflare real-IP restoration was present via trusted proxy ranges and `CF-Conn
 
 A later 10-minute access-log check found only 13 completed WebFinger requests across four apparent sources, with 12 classified as 499/504. This indicated reduced *completed request volume* but not yet a fully healthy request population.
 
+# Evidence Preservation
+
+On 2026-10-20 JST, the operator collected restricted-access copies of the
+currently available Nginx access/error logs (including rotated files), the
+Mastodon web, Sidekiq, and streaming container logs for the incident time window,
+capture metadata, and container identification metadata.
+
+- Incident window specified for Docker log collection: 2026-10-19 12:30–15:05 UTC
+- Nginx: 15 access-log files and 15 error-log files, including rotations
+- Docker: web, Sidekiq, streaming stdout/stderr log captures
+- Total on-disk evidence directory size reported by `du -sh`: approximately 68 MiB
+- A `SHA256SUMS` manifest was generated from the collected files.
+- `sha256sum -c SHA256SUMS` returned `OK` for every listed file, including
+  zero-byte stderr captures.
+
+Collection completed without deleting source logs or restarting services.
+Checksums establish that collected bytes matched their manifests at validation
+time; they **do not** establish that all incident-period events were retained.
+
+**Outstanding limitations:** Nginx log coverage within the exact incident
+window has not yet been exhaustively checked. The web and Sidekiq containers
+were recreated earlier during troubleshooting; prior container log segments
+may no longer be accessible via current `docker logs`. Any separately saved
+Puma diagnostic trace must be inventoried and copied independently if retained.
+An encrypted, off-host copy has not yet been verified.
+
+Raw logs and the manifest's sensitive operational provenance are kept outside
+this public repository. The repository contains no client addresses, WebFinger
+target identifiers, raw access logs, or current blocking thresholds.
+
 # Root Cause
 
 **Unconfirmed.**
