@@ -140,12 +140,23 @@ Collection completed without deleting source logs or restarting services.
 Checksums establish that collected bytes matched their manifests at validation
 time; they **do not** establish that all incident-period events were retained.
 
+The previously captured Puma worker thread dump was subsequently copied from
+its temporary diagnostic file into the restricted evidence directory. The
+`SHA256SUMS` manifest was regenerated, and the operator reported that the
+verification command completed successfully.
+
+A GPG symmetric AES-256 encrypted archive was created on the server and
+transferred to the operator's MacBook via SCP. The transferred archive was
+approximately 30 MB. The Mac's `shasum -a 256 -c` verification returned
+`SUP-0013-20261019.tar.gz.gpg: OK`, confirming that the off-host archive
+matched the server-generated checksum file.
+
 **Outstanding limitations:** Nginx log coverage within the exact incident
 window has not yet been exhaustively checked. The web and Sidekiq containers
 were recreated earlier during troubleshooting; prior container log segments
-may no longer be accessible via current `docker logs`. Any separately saved
-Puma diagnostic trace must be inventoried and copied independently if retained.
-An encrypted, off-host copy has not yet been verified.
+may no longer be accessible via current `docker logs`. The off-host archive's
+integrity was checked, but a full decryption and archived-content test has not
+yet been reported.
 
 Raw logs and the manifest's sensitive operational provenance are kept outside
 this public repository. The repository contains no client addresses, WebFinger
