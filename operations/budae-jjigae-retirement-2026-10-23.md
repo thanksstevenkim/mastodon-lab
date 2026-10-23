@@ -66,6 +66,7 @@ Two operational checkpoints were captured: immediately after bypassing the sidec
 | Check | Observed result |
 | --- | --- |
 | `nginx -t` after initial route switch | `syntax is ok` / `test is successful` |
+| **Final `nginx -t` after sidecar removal and Nginx cleanup** | `syntax is ok` / `test is successful` |
 | Reload of Nginx after route switch | command completed without a reported failure |
 | Common `/inbox` with direct Mastodon routing | repeated `202` responses in Web logs |
 | User-specific `/users/thx/inbox` with direct routing | `202` response in Web logs |
@@ -86,7 +87,7 @@ The final sample of real Inbox requests at approximately **14:19 JST on 2026-10-
 - No quantified before/after spam-rejection comparison was performed.
 - No long-term trend or end-user behavioral regression assessment has yet been documented.
 - No new database migration, application image rebuild or restart of otherwise healthy Mastodon services was needed for this change.
-- No final `nginx -t` output after deletion of `@budae` was included in the last checkpoint. The active configuration was inspectable with `nginx -T` and HTTP/Inbox traffic continued, but a subsequent explicit syntax check is still a useful hygiene step.
+- A **final `sudo nginx -t`** was subsequently performed after removal of the `@budae` block. Both `syntax is ok` and `test is successful` were reported. This confirms the remaining Nginx configuration passed a syntax/configuration test; it does not extend the application-level validation beyond the sampled requests.
 
 Raw user identifiers, signing-key URIs, access logs and active moderation thresholds are not reproduced here.
 
@@ -106,5 +107,5 @@ Never restore Inbox routing to a stopped sidecar first, as that would strand inc
 - Monitor federation-intake errors and trends in unwanted remote mentions/content after removal.
 - Continue normal moderation, instance-blocking and account-approval practices as separate controls.
 - If the maintainer releases a supported successor or if abuse trends justify reintroducing a filter, evaluate and test the new implementation independently rather than automatically restoring the outdated image.
-- Confirm the current Nginx config syntax with an explicit `nginx -t` during the next regular check.
+- Continue including `nginx -t` in future Nginx configuration changes; the final post-retirement check on 2026-10-23 succeeded.
 
