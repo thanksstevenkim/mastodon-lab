@@ -33,6 +33,10 @@ The spam filter was gradually improved by detecting:
 - Image attachment patterns
 - Repeated message patterns
 
+## Related operational decision
+
+- [2026-10-23 Budae-jjigae sidecar retirement](budae-jjigae-retirement-2026-10-23.md): the additional inbox filtering proxy was removed after maintainer consultation and a verified direct-Mastodon routing change. This does not imply spam-filter feature parity.
+
 ## Lessons Learned
 
 Open registration alone was not the primary issue.
