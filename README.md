@@ -27,6 +27,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [Mastodon upgrade runbook](runbooks/upgrade.md)
 - [Runtime and dependency security patch runbook](runbooks/runtime-dependency-security-patches.md)
 - [2026-10-22 Mastodon 4.7.3 security maintenance](update-log/4-7-3-security-maintenance-2026-10-22.md)
+- [2026-10-23 Ruby 4.0.9 manual-base security patch and rollout](update-log/4-7-3-ruby-4-0-9-security-maintenance-2026-10-23.md)
 - [2026-10-23 Budae-jjigae retirement](operations/budae-jjigae-retirement-2026-10-23.md)
 - [Spam and moderation runbook](runbooks/spam-and-moderation.md)
 - [Mastodon signup review bot](runbooks/mastodon-signup-review-bot.md)
