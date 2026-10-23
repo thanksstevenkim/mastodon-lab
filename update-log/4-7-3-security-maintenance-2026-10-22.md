@@ -178,6 +178,10 @@ Runtime verification showed UID 65534, no effective capabilities, `NoNewPrivs=1`
 
 This is risk reduction, **not** a substitute for rebuilding or replacing the outdated base image.
 
+## Subsequent outcome — 2026-10-23
+
+The Budae-jjigae service documented above was **subsequently retired** following maintainer consultation. Nginx inbox routing now goes directly to Mastodon Web; the Budae container and Nginx proxy references were removed. Sampled service health, Inbox acceptance and Sidekiq work remained normal. See the separate [2026-10-23 retirement record](../operations/budae-jjigae-retirement-2026-10-23.md). The 2026-10-22 findings in this log describe the earlier state and have intentionally been preserved as historical evidence.
+
 ## Recovery, limitations and follow-up
 
 - Keep the previous tagged images and timestamped Compose backups; do not prune them casually.
