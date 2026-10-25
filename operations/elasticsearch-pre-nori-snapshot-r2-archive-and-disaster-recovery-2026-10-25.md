@@ -131,19 +131,44 @@ The search checks used `match_all` with no user documents printed. This validate
 
 The independent recovery container ran on **the same physical host**, not an off-site replacement server. The R2 remote archive was genuinely downloaded; the successful restore did not use the original local snapshot repository as its source.
 
+## Post-validation DR lab cleanup (2026-10-25)
+
+Following the successful independent restore validation, the operator retired the temporary production-data DR environment in controlled steps. Each command's output was reviewed before continuing:
+
+- Confirmed the production Elasticsearch container remained healthy and used separate live-data and snapshot bind mounts.
+- Inspected the isolated DR container: Elasticsearch 8.19.15, Docker network mode `none`, a dedicated writable restore-data bind mount, and a read-only bind mount of the R2-reconstructed snapshot repository. It was not a Docker Compose-managed service and had restart policy `no`.
+- Compared mount references across all Docker containers; no other container referenced the three targeted temporary directories. Directory identity, non-symlink status, mount points, and open files were checked before cleanup.
+- Stopped and removed **only** the final production-backup DR container. Then removed the restored index data directory, the decrypted/reconstructed filesystem snapshot repository, and the downloaded encrypted archive plus its SHA-256 manifest, verifying each target was absent afterward. Their previously observed directory sizes totalled approximately **4.2 GB** (three readings rounded to 1.4 GB).
+- A shell command-substitution parsing error occurred during the first directory removal precheck. The intended DR directory was reported absent afterward; the production and protected backup directories were explicitly checked for continued existence. Subsequent deletions used fail-fast checks and exact paths.
+- Left the original production Elasticsearch data directory, live filesystem snapshot repository, independently retained encrypted local archive, and production R2 archive **untouched** by cleanup commands. The remote R2 archive was not re-downloaded or independently rechecked during cleanup.
+- Earlier, separate filesystem and R2 restore laboratory containers were **not** included in this cleanup and remain out of scope.
+
+**Post-cleanup production checks (authenticated, read-only):**
+
+| Check | Observed result |
+| --- | --- |
+| Cluster health | `green`, 1 data node, 21 active primary shards, 21 active shards, 0 unassigned shards, 0 pending tasks |
+| Search index health | Six of six search indexes `green` |
+| Search primary shards | 14 across the six indexes |
+| Search Lucene document count | 2,829,250 across the six live indexes; expected to change with indexing |
+| Snapshot repository registration | `mustard_fs_backup`, type `fs`, `readonly: false` |
+| New write/restore performed during cleanup | None |
+
+The final repository check confirms the configured writable **setting**, not a new successful write test. All observed post-cleanup checks passed, but they do not establish end-to-end Mastodon search behavior. No Nori installation, reindex, feature activation, or application deployment was performed.
+
 ## Scope, outstanding work, and safety limits
 
 - **Backup scope:** Elasticsearch search indexes only. This snapshot used `include_global_state: false` and is **not** a complete Mastodon or PostgreSQL backup. Point-in-time search data and current live index counts can differ.
 - **Retention and automation:** This was a manually executed, point-in-time recovery validation. Backup scheduling, versioned retention, error alerting, automated upload retries, and restore drills are not yet documented as production-ready.
 - **Storage behavior:** Avoid direct Elasticsearch snapshot writes to R2 until the repository-analysis incompatibility is resolved and fully retested. Investigate the rclone `501 NotImplemented` first-attempt behavior before relying on unattended archival.
-- **Confidentiality:** The temporary DR data directory and its indexes contain restored production search data in plaintext. At the end of this record, secure cleanup of the isolated DR environment **had not yet been confirmed**. Cleanup must use exact lab container and directory identities and must never target the production data mount, original snapshot repository, or encrypted archive.
+- **Confidentiality:** The temporary DR container, restored production-search data, and decrypted recovery repository were subsequently removed as documented above. Ordinary filesystem deletion is not a guarantee of physical media sanitization. The original production paths and backups were excluded.
 - **Disaster scope:** Recovery was validated on one host using a separate network-isolated container. A true alternate-host recovery and an end-to-end Mastodon service recovery remain untested.
 - **Nori deployment:** The source change was merged and passed CI, but the live Elasticsearch image, analyzers, and search mappings remain the pre-Nori configuration. The Korean search feature flag was not activated; no production reindex or cutover occurred.
 
 ## Next actions
 
 1. Verify the production cluster and snapshot repository remain healthy/writable; retain the encrypted local and R2 backup copies plus the independent recovery passphrase.
-2. Safely retire temporary DR containers and decrypted recovery data **after** identifying the exact lab paths and retaining the outcome of this validation.
+2. **Completed (2026-10-25):** Retired the final production-data DR container and removed its recovered index data, decrypted repository, and downloaded encrypted archive. Other unrelated historical lab containers remain outside this cleanup scope.
 3. Formalize a repeatable, monitored filesystem-snapshot → consistent encrypted repository archive → R2 upload workflow, including failure recovery, retention, and periodic independent restore tests.
 4. Revisit the R2 S3 compatibility and rclone 501 behaviors separately; do not weaken verification merely to suppress a warning.
 5. With a tested pre-Nori recovery point established, develop a **separate** staged Nori production rollout plan covering image/plugin, index mapping and reindex, concurrent writes, validation, and rollback.
