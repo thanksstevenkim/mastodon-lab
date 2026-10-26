@@ -1,12 +1,12 @@
-# Production Sidekiq Delivery Retries and Daily Audit Timer (2026-10-26)
+# Production Sidekiq Delivery Retries, Daily Audit, and External Alerting (2026-10-26)
 
 ## Summary and status
 
 - **Observed on:** 2026-10-26 (UTC/JST).
 - **Environment:** production Mastodon 4.7.3, Docker Compose, Sidekiq 8.1.6, Redis.
-- **Scope:** read-only queue/retry/dead-set investigation and daily systemd audit installation.
+- **Scope:** read-only queue/retry/dead-set investigation, daily systemd audit, and Healthchecks.io notifications with tested email and Matrix/Element X alert channels.
 - **Outcome:** six ordinary queues had no pending jobs or observable queue latency at the sampled checkpoints; repeated federation delivery retries were concentrated in a few anonymous destinations; the first **scheduled**, not merely manual, daily audit succeeded at **2026-10-26 01:30:29 UTC**.
-- **Not claimed:** complete federation delivery success, root cause of the remote HTTP errors, successful remote signature verification, or an automated alerting system.
+- **Not claimed:** complete federation delivery success, root cause of the remote HTTP errors, successful remote signature verification, or verification of the first *scheduled* external heartbeat after notification installation (next due 2026-10-27 01:30 UTC).
 
 The audit implementation does **not** clear Redis, purge retries, delete dead jobs, force retries, restart Sidekiq, or mutate production Mastodon records.
 
@@ -96,7 +96,57 @@ systemctl show mustard-sidekiq-audit.service -p Result -p ExecMainStatus
 
 If the audit fails, inspect journal errors, Docker/Compose access, application health, and Redis connectivity before changing jobs. A failure in the audit is not itself proof of user-visible Mastodon downtime. For temporary suspension of **monitoring only**, an operator may use `sudo systemctl disable --now mustard-sidekiq-audit.timer`; this does **not** stop the Sidekiq service. Reactivation is a separate, deliberate decision.
 
-The current installation produces **journald records only**: there is no configured outbound notification, dashboard, queue-latency alert threshold, or independently verified alert delivery. Journal retention is governed by the host's existing journald policy. Monitoring must be reviewed to become actionable.
+The daily audit now produces **journald records and a Healthchecks.io heartbeat**. A separate root-owned `ExecStopPost` notifier sends a success event when the audit succeeds, or a `/fail` event when systemd reports an audit failure. Missed scheduled heartbeats can also trigger an external alert. Email and Matrix/Element X delivery have been verified using an isolated test check, not a forced failure of the production audit. There is still **no configured queue-latency or Retry-count threshold alert**, and this heartbeat is not a general HTTPS availability monitor. Journal retention follows the host's existing journald policy.
+
+## External heartbeat and notification rollout (STEP 14A–14E)
+
+The existing read-only audit logic and systemd timer schedule were retained. External monitoring was added separately:
+
+| Component | Verified state |
+| --- | --- |
+| Production Check | `Mustard Sidekiq Daily Audit`, calendar `*-*-* 01:30:00 UTC`, UTC timezone, 10-minute grace |
+| Daily trigger | `mustard-sidekiq-audit.timer` enabled/active; `Persistent=true` |
+| Credential file | `/etc/mustard-monitoring/sidekiq-healthchecks.url`, `root:root` / `0600`, parent restricted |
+| Notifier | `/usr/local/libexec/mustard-sidekiq-healthchecks-notify`, root owned, executable |
+| Service drop-in | `/etc/systemd/system/mustard-sidekiq-audit.service.d/10-healthchecks.conf` |
+| External channels | Email integration and Matrix integration, including iPhone Element X push |
+
+The drop-in invokes the notifier **after** the audit:
+
+```ini
+[Service]
+ExecStopPost=-+/usr/local/libexec/mustard-sidekiq-healthchecks-notify
+```
+
+The `+` prefix permits the notifier to run as root to read the root-only URL file even though the read-only Sidekiq audit runs as `ubuntu`. The `-` prefix prevents a failed notification attempt from overriding the audit service result. The script evaluates the systemd-provided `SERVICE_RESULT`: `success` sends a normal heartbeat, while a non-success value sends the Healthchecks `/fail` signal. Both branches passed offline `--dry-run` tests; the **actual production failure branch was not induced**.
+
+The script submits curl configuration over standard input rather than putting the secret Ping URL in the curl command arguments, uses HTTPS-only transport and bounded timeouts, and emits only non-secret delivery status to journald. The file path and permission mode are documented; **no Ping URL, UUID, Matrix token, room ID, email address, or raw credential** is included here.
+
+### Validation evidence
+
+- Preflight passed for systemd, script syntax, DNS, and HTTPS reachability. A Healthchecks test `/log` request returned `OK` without changing the production Check state.
+- A manually started **production** audit succeeded after installing the notifier. Journald recorded `=== SIDEKIQ AUDIT COMPLETED ===` and `Healthchecks success event: DELIVERED`; systemd reported `Result=success`, `ExecMainStatus=0`.
+- A separate disposable Healthchecks test Check received an initial normal Ping, then a `/fail` Ping, then a recovery Ping. Its **failure and recovery email notifications** were received.
+- The Matrix integration was tested with a separate Check: failure and recovery messages arrived in the private operations room and **both triggered iPhone Element X push**. The production Check was never sent a test `/fail` event.
+- The production Check was configured with **Email ON and Matrix ON** after those delivery tests. The temporary test Check(s) were not part of the operational monitoring dependency.
+- Final read-only audit confirmed notifier presence, secret file `600 root:root`, configured systemd drop-in, an audit completion marker, a successful Healthchecks event in journald, an active timer, and next scheduled run at **2026-10-27 01:30:00 UTC** (**10:30 JST**).
+
+**Evidence boundary:** Email/Matrix delivery was tested end-to-end against test Checks. The production audit-to-Healthchecks **success** path was tested with a manual production service start. The scheduled production **heartbeat after rollout**, the notification path for a real production audit failure, and failure to deliver a heartbeat during a real outage remained untested as of this record. The next scheduled run must be checked after it occurs.
+
+### Safe verification and response
+
+Read-only checks:
+
+```bash
+systemctl is-enabled mustard-sidekiq-audit.timer
+systemctl is-active mustard-sidekiq-audit.timer
+systemctl list-timers --all mustard-sidekiq-audit.timer
+systemctl show mustard-sidekiq-audit.service -p Result -p ExecMainStatus -p DropInPaths
+sudo journalctl -u mustard-sidekiq-audit.service -n 100 --no-pager
+sudo stat -c '%a %U:%G' /etc/mustard-monitoring/sidekiq-healthchecks.url
+```
+
+If an email or Matrix warning arrives, check the external Check history and systemd journal, then determine whether the audit **failed**, did **not run**, or **ran but could not report** (network/notification failure). Keep these cases distinct. Avoid automatically purging Sidekiq Retry/Dead, flushing Redis, restarting services, or sending deliberate failure signals to the production Check. A successful Healthchecks Ping demonstrates successful monitoring execution/reporting, **not** guaranteed remote ActivityPub delivery.
 
 ## Conclusions and follow-up
 
@@ -104,7 +154,7 @@ The current installation produces **journald records only**: there is no configu
 2. Distinguish remote 5xx/timeout/circuit-breaker responses from persistent 401 responses; do not attribute all failures to signing or to storage without direct evidence.
 3. Respect delivery retry exhaustion (`retry: 16`, `dead: false`); a falling Retry count is not a delivery-success metric.
 4. Keep the monitoring script read-only and do not automatically restart containers, retry all jobs, delete queues, or flush Redis.
-5. Evaluate a **separate**, tested notification mechanism and periodic review of the timer's journal; those are future work, not part of this verified deployment.
+5. Keep the tested external heartbeat and two notification channels, periodically review journald, and verify the next scheduled external heartbeat after notification installation. Do not conflate notification tests on a separate check with a live production failure-path test.
 6. Reassess HTTP 401 destinations only if needed, with privacy-safe diagnostics and a distinction between local signature generation and remote acceptance.
 
 Related: [earlier pull-queue backlog after account deletion](../incidents/012-sidekiq-pull-queue-backlog-after-account-deletion.md). That incident involved a large temporary `pull` backlog; the present investigation involved mostly `push` delivery retries with **empty ordinary queues**. They must not be conflated.
