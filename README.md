@@ -24,6 +24,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 
 ### Featured Documentation
 
+- [2026-10-26 Sidekiq delivery retry investigation and daily audit timer](operations/sidekiq-delivery-retries-and-daily-audit-2026-10-26.md)
 - [Mastodon upgrade runbook](runbooks/upgrade.md)
 - [Runtime and dependency security patch runbook](runbooks/runtime-dependency-security-patches.md)
 - [2026-10-22 Mastodon 4.7.3 security maintenance](update-log/4-7-3-security-maintenance-2026-10-22.md)
