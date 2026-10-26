@@ -55,7 +55,7 @@ The first attempt to group `failed_at` misinterpreted millisecond timestamps as 
 
 The operator installed the following root-owned files, keeping the timer **disabled** until the manual validation passed:
 
-- `/usr/local/libexec/mustard-sidekiq-audit`: fail-fast, read-only Bash audit, executed with an unprivileged deploy user.
+- `/usr/local/libexec/mustard-sidekiq-audit`: fail-fast, read-only Bash audit, executed as a non-root deploy user with Docker access (which can confer host-level privileges).
 - `mustard-sidekiq-audit.service`: a `Type=oneshot` systemd unit, journal output, five-minute startup timeout.
 - `mustard-sidekiq-audit.timer`: `OnCalendar=*-*-* 01:30:00 UTC`, `AccuracySec=1min`, `Persistent=true`.
 
