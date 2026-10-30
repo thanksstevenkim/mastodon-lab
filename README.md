@@ -34,6 +34,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [2026-10-24 Ruby 4.0.9 official-base and gem security patch rollout](update-log/4-7-3-ruby-4-0-9-official-base-and-gem-security-2026-10-24.md)
 - [2026-10-23 Ruby 4.0.9 manual-base security patch and rollout](update-log/4-7-3-ruby-4-0-9-security-maintenance-2026-10-23.md)
 - [2026-10-23 Budae-jjigae retirement](operations/budae-jjigae-retirement-2026-10-23.md)
+- [2026-10-30 operator reflection: fairness and limits of moderation](operations/moderation-fairness-and-limits-2026-10-30.md)
 - [Spam and moderation runbook](runbooks/spam-and-moderation.md)
 - [Mastodon signup review bot](runbooks/mastodon-signup-review-bot.md)
 - [Cloudflare 521 after an upgrade](incidents/001-cloudflare-521-after-upgrade.md)
