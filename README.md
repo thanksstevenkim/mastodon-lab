@@ -24,6 +24,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 
 ### Featured Documentation
 
+- [2026-11-02–03 Nori search production cutover and administrator health-check fix](operations/korean-nori-search-production-cutover-2026-11-02-03.md)
 - [2026-10-25–26 production maintenance: Sidekiq, PgHero, R2 media recovery and Nori rollout](operations/production-maintenance-sidekiq-pghero-r2-nori-2026-10-25-26.md)
 - [2026-10-26 Sidekiq delivery retry investigation and daily audit timer](operations/sidekiq-delivery-retries-and-daily-audit-2026-10-26.md)
 - [Mastodon upgrade runbook](runbooks/upgrade.md)
