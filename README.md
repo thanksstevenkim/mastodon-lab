@@ -38,6 +38,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 - [2026-10-30 operator reflection: fairness and limits of moderation](operations/moderation-fairness-and-limits-2026-10-30.md)
 - [Spam and moderation runbook](runbooks/spam-and-moderation.md)
 - [Mastodon signup review bot](runbooks/mastodon-signup-review-bot.md)
+- [2026-11-13: Nginx 521 after unattended glibc upgrade (SUP-0014)](incidents/014-nginx-restart-dns-failure-after-glibc-update-2026-11-13.md)
 - [Cloudflare 521 after an upgrade](incidents/001-cloudflare-521-after-upgrade.md)
 - [Incomplete database migration](incidents/007-database-migration-incomplete-after-upgrade.md)
 - [GitHub Actions failures caused by fork drift](incidents/009-github-actions-failures-from-fork-drift.md)
