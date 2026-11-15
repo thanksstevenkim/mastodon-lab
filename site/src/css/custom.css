@@ -90,3 +90,5 @@
 .lab-doc--upgrade-preview .markdown > h1:first-child {
   display: none; /* The same heading is now placed before the checklist. */
 }
+
+.lab-home__title-line { display: block; }
