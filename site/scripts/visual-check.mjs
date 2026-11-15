@@ -8,6 +8,7 @@ const base = '/mastodon-lab/';
 const screenshots = 'visual-snapshots';
 const server = spawn('npm', ['run', 'serve', '--', '--host', '127.0.0.1', '--port', '3200'], {
   stdio: ['ignore', 'pipe', 'pipe'],
+  detached: true, // Keep npm and its spawned Docusaurus server in one process group.
 });
 server.stdout.on('data', (buffer) => process.stdout.write(buffer));
 server.stderr.on('data', (buffer) => process.stderr.write(buffer));
@@ -80,7 +81,9 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
 
-    const response = await page.goto(origin + base + check.path, {waitUntil: 'networkidle'});
+    console.log('START_VISUAL_CHECK', check.name);
+    const response = await page.goto(origin + base + check.path, {waitUntil: 'domcontentloaded', timeout: 20000});
+    await page.locator(check.expected).first().waitFor({state: 'visible', timeout: 8000}).catch(() => {});
     const httpStatus = response?.status() ?? 0;
     const componentVisible = await page.locator(check.expected).first().isVisible().catch(() => false);
     const metrics = await page.evaluate(() => ({
@@ -118,5 +121,8 @@ try {
   if (failures > 0) throw new Error(failures + ' visual/browser checks failed; inspect screenshots and results.json');
 } finally {
   if (browser) await browser.close();
-  server.kill('SIGTERM');
+  // npm spawns Docusaurus. Terminate the entire process group, not just npm.
+  try { process.kill(-server.pid, 'SIGTERM'); } catch {}
+  server.stdout.destroy();
+  server.stderr.destroy();
 }
