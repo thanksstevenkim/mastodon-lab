@@ -1,0 +1,29 @@
+name: Docusaurus prototype build (no deploy)
+
+on:
+  pull_request:
+    paths:
+      - 'site/**'
+      - 'incidents/**'
+      - 'runbooks/**'
+      - 'update-log/**'
+      - 'operations/**'
+      - '.github/workflows/docusaurus-prototype-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install site dependencies
+        working-directory: site
+        run: npm install --no-audit --no-fund
+      - name: Build both locales
+        working-directory: site
+        run: npm run build
