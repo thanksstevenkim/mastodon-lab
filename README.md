@@ -1,5 +1,7 @@
 # Mastodon Operations Lab
 
+**English** | [한국어](README.ko.md)
+
 This repository collects operational knowledge gained from maintaining a production, self-hosted Mastodon server since November 2022. It focuses on real incidents, troubleshooting, recurring maintenance, and version upgrades rather than providing a general-purpose deployment guide.
 
 The repository demonstrates practical experience in:
