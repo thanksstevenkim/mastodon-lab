@@ -3,8 +3,8 @@ import {themes as prismThemes} from 'prism-react-renderer';
 const config = {
   title: 'Mastodon Operations Lab',
   tagline: 'Production incidents, operating decisions, and reusable runbooks',
-  url: 'https://thanksstevenkim.github.io',
-  baseUrl: '/mastodon-lab/',
+  url: process.env.DOCUSAURUS_SITE_URL || 'https://thanksstevenkim.github.io',
+  baseUrl: process.env.DOCUSAURUS_BASE_URL || '/mastodon-lab/',
   organizationName: 'thanksstevenkim',
   projectName: 'mastodon-lab',
   // Keep every source Markdown record at its existing GitHub path.
