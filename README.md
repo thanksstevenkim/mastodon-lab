@@ -24,6 +24,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 
 ### Featured Documentation
 
+- [2026-11-15 one-minute website availability check and Healthchecks alerts](operations/website-healthchecks-monitoring-2026-11-15.md)
 - [2026-11-15 Ubuntu 24.04 package maintenance and controlled reboot](operations/ubuntu-24-04-package-updates-and-reboot-2026-11-15.md)
 - [2026-11-15 Cloudflare R2 legacy media cleanup and weekly automation](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
 - [2026-11-13 Mastodon 4.7.5 security upgrade](update-log/4-7-5-security-upgrade-2026-11-13.md)
