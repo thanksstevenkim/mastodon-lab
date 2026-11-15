@@ -31,6 +31,8 @@ const config = {
             'update-log/**/*.md',
           ],
           routeBasePath: 'records',
+          // Preserve numbered incident identifiers (e.g. 014-...) in site URLs.
+          numberPrefixParser: false,
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/thanksstevenkim/mastodon-lab/edit/main/',
           showLastUpdateTime: false,
