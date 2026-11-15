@@ -1,0 +1,72 @@
+import {themes as prismThemes} from 'prism-react-renderer';
+
+const config = {
+  title: 'Mastodon Operations Lab',
+  tagline: 'Production incidents, operating decisions, and reusable runbooks',
+  url: process.env.DOCUSAURUS_SITE_URL || 'https://thanksstevenkim.github.io',
+  baseUrl: process.env.DOCUSAURUS_BASE_URL || '/mastodon-lab/',
+  organizationName: 'thanksstevenkim',
+  projectName: 'mastodon-lab',
+  // Keep every source Markdown record at its existing GitHub path.
+  // This prototype reads Markdown from the parent repository in place.
+  onBrokenLinks: 'throw',
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'ko'],
+    localeConfigs: {
+      en: {label: 'English'},
+      ko: {label: '한국어'},
+    },
+  },
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          path: '..',
+          include: [
+            'incidents/**/*.md',
+            'runbooks/**/*.md',
+            'operations/**/*.md',
+            'update-log/**/*.md',
+          ],
+          routeBasePath: 'records',
+          // Preserve numbered incident identifiers (e.g. 014-...) in site URLs.
+          numberPrefixParser: false,
+          sidebarPath: './sidebars.js',
+          editUrl: 'https://github.com/thanksstevenkim/mastodon-lab/edit/main/',
+          showLastUpdateTime: false,
+        },
+        blog: false,
+        theme: {customCss: './src/css/custom.css'},
+      },
+    ],
+  ],
+  themeConfig: {
+    colorMode: {respectPrefersColorScheme: true},
+    navbar: {
+      title: 'Mastodon Lab',
+      items: [
+        {to: '/records/incidents/014-nginx-restart-dns-failure-after-glibc-update-2026-11-13', label: 'Incidents', position: 'left'},
+        {to: '/records/runbooks/upgrade', label: 'Runbooks', position: 'left'},
+        {to: '/records/update-log/4-7-5-security-upgrade-2026-11-13', label: 'Updates', position: 'left'},
+        {to: '/records/operations/moderation-fairness-and-limits-2026-10-30', label: 'Operations', position: 'left'},
+        {type: 'localeDropdown', position: 'right'},
+        {href: 'https://github.com/thanksstevenkim/mastodon-lab', label: 'GitHub', position: 'right'},
+      ],
+    },
+    footer: {
+      style: 'light',
+      links: [
+        {title: 'Source', items: [{label: 'Mastodon Operations Lab on GitHub', href: 'https://github.com/thanksstevenkim/mastodon-lab'}]},
+      ],
+      copyright: 'Independent Mastodon operations notes. Experimental documentation UI.',
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  },
+};
+
+export default config;
