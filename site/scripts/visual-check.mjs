@@ -95,6 +95,22 @@ try {
     }));
     const overflow = metrics.documentWidth > metrics.viewport + 2;
 
+    if (check.name.startsWith('incident-')) {
+      const labels = await page.locator('.menu__link').allTextContents();
+      if (labels.some((label) => label.trim() === 'Ticket ID')) {
+        errors.push('Incident sidebar still contains an uninformative Ticket ID label');
+      }
+      if (!(await page.locator('.lab-doc__intro--incident h1').isVisible().catch(() => false))) {
+        errors.push('Incident summary heading is missing');
+      }
+    }
+
+    if (check.name.startsWith('runbook-')) {
+      if (!(await page.locator('.lab-doc--upgrade-preview .lab-doc__intro h1').isVisible().catch(() => false))) {
+        errors.push('Runbook summary heading is missing');
+      }
+    }
+
     if (check.name === 'runbook-mobile') {
       const first = page.locator('.lab-checklist input[type="checkbox"]').first();
       await first.check();
