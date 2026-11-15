@@ -8,7 +8,7 @@ const entries = [
     category: 'INCIDENT / SUP-0014',
     date: '2026.11.13',
     title: 'Nginx restart and R2 DNS failure',
-    titleKo: 'Nginx 재시작과 R2 DNS 확인 실패',
+    titleKo: 'Nginx 521: R2 DNS 확인 실패',
     to: '/records/incidents/014-nginx-restart-dns-failure-after-glibc-update-2026-11-13',
     type: 'incident',
   },
