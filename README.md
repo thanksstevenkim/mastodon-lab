@@ -24,6 +24,8 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 
 ### Featured Documentation
 
+- [2026-11-15 Cloudflare R2 legacy media cleanup and weekly automation](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
+- [2026-11-13 Mastodon 4.7.5 security upgrade](update-log/4-7-5-security-upgrade-2026-11-13.md)
 - [2026-11-02–03 Nori search production cutover and administrator health-check fix](operations/korean-nori-search-production-cutover-2026-11-02-03.md)
 - [2026-10-25–26 production maintenance: Sidekiq, PgHero, R2 media recovery and Nori rollout](operations/production-maintenance-sidekiq-pghero-r2-nori-2026-10-25-26.md)
 - [2026-10-26 Sidekiq delivery retry investigation and daily audit timer](operations/sidekiq-delivery-retries-and-daily-audit-2026-10-26.md)
