@@ -27,3 +27,17 @@ jobs:
       - name: Build both locales
         working-directory: site
         run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: site
+        run: npx playwright install --with-deps chromium
+      - name: Check desktop and mobile browser views
+        working-directory: site
+        run: npm run visual-check
+      - name: Save visual review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mastodon-lab-visual-snapshots
+          path: site/visual-snapshots/
+          if-no-files-found: warn
