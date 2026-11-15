@@ -50,7 +50,7 @@ export default function Home() {
       <main className="lab-home">
         <header className="lab-home__intro">
           <p className="lab-eyebrow">FIELD NOTES / SINCE 2022</p>
-          <h1>{ko ? '운영의 기록, 문제 해결의 과정.' : 'The work behind a running service.'}</h1>
+          <h1>{ko ? <>운영의 기록,<span className="lab-home__title-line">문제 해결의 과정.</span></> : 'The work behind a running service.'}</h1>
           <p className="lab-home__lead">
             {ko
               ? '실제 Mastodon 서버에서 발생한 장애와 유지보수, 반복 가능한 운영 절차, 그리고 운영자의 판단을 기록합니다.'
