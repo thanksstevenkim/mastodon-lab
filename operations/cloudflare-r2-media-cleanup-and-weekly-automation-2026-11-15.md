@@ -113,3 +113,11 @@ The **Usage** panel showed **104.52 GB total storage**, **20.45k Class A operati
 4. Treat Ubuntu package updates and the pending reboot/OS upgrade notice as **separate** maintenance, not a prerequisite to declaring this R2 cleanup batch complete.
 
 This public record intentionally omits Healthchecks Ping URLs, credentials, affected remote account identifiers, user media paths, and raw storage object inventories.
+
+## 2026-11-16 follow-up: retained objects and backup credential separation
+
+A subsequent **read-only** inventory found 73,071 objects (14.601 GiB by rounded prefix sums) under the old nested media prefixes, excluding legacy backup archives. The remaining `media_attachments/` count (30,949) matched the prior attachment cleanup log's `no_copy=30867` plus `mismatch=82`; individual object identity was not exhaustively compared. A small DB/R2 sample confirmed three current local media records whose normal-path objects existed at matching sizes. The operator therefore **retained the legacy objects** and did not start another mass deletion or recovery batch.
+
+The same operating period also included dedicated private database backup storage, scoped R2 credentials, and retirement of the historical broad administrator token. Automatic upload and retention follow-up were pending at this checkpoint.
+
+For the evidence, the limited sample results, credential migration, and exact remaining tasks, see [2026-11-16 R2 backup isolation and credential rotation](cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md).
