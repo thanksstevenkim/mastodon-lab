@@ -13,6 +13,8 @@ The repository demonstrates practical experience in:
 - Moderation policy and service operations
 - Technical documentation and continuous improvement
 
+**Current work:** [Current Operations Status](CURRENT_STATUS.md) — a dated handoff of recorded decisions, pending checks, and next actions (not live monitoring).
+
 ## Repository Guide
 
 | Area                       | Description                                                                     |
