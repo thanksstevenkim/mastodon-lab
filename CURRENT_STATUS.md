@@ -1,53 +1,49 @@
 # Current Operations Status
 
-> **Last documented checkpoint:** 2026-11-16 (JST).
+> **Last documented checkpoint:** 2026-11-18 (JST).
 >
-> This is a short handoff index of **recorded decisions and pending actions**, not live production health monitoring. The entries below summarize the linked operation notes and have not been reverified against the running server. Coverage currently focuses on R2 maintenance; an unlisted workstream should not be assumed complete.
+> This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers the R2 maintenance workstream; silence about other workstreams does not prove their health or completion.
 
 ## Next checkpoint
 
-**2026-11-17, 09:30 JST:** Check whether the 04:00 scheduled database backup completed successfully and whether its archive exists in the private backup bucket. **Only after that check passes**, consider restoring seven-day retention for the new destination.
+**2026-11-23, 09:30 JST:** Inspect the **first scheduled** `mustard-media-cache-cleanup.timer` execution (due Nov 22, 04:00 JST) and actual Healthchecks delivery. Do not force a duplicate deletion to verify monitoring.
 
 ## Workstream status
 
-| Workstream | State at checkpoint | Next action / boundary |
+| Workstream | State at Nov 18 checkpoint | Boundary / next action |
 | --- | --- | --- |
-| Legacy R2 media and preview-card cleanup | Completed batches documented through Nov 16 | Do not repeat successful deletion batches |
-| Residual old-path media | **Preserved by decision**: 73,071 objects (14.601 GiB by rounded inventory sums) | No broad deletion or recovery; require specific justification |
-| DB–R2 consistency | Limited samples completed; one remote header not recovered | Full consistency audit not performed; targeted issue deferred |
-| Database backup isolation | Private backup destination configured; 7 prior archives copied; one new archive uploaded manually | Verify the **next automatic** cron backup |
-| R2 credential scope | Media and backup access separated; historical broad media token revoked | No re-rotation required without new evidence |
-| Seven-day backup retention | **Disabled intentionally** during migration | Review only if automatic backup is confirmed |
-| Old-bucket backup originals | **Retained intentionally** | Make a separate retention/removal decision |
-| Weekly remote-media cache cleanup | Timer enabled; first scheduled run and production Healthchecks delivery unverified | Observe first run on Nov 22; review Nov 23 |
-| Operational documentation | Nov 16 field notes recorded | Consolidation review scheduled for Nov 18 |
+| R2 media legacy cleanup | Historical media/preview-card batches completed | Do not rerun previously successful deletion batches |
+| Residual nested-path media | **Preserved by decision**: 73,071 objects; 14.601 GiB based on rounded inventory | No broad removal or recovery without specific grounds |
+| DB–R2 consistency | Limited samples only; one remote account header still unrecovered | No full integrity claim or automatic remedial batch |
+| DB backup isolation | **Completed**: private `mustard-db-backups` with scoped credentials; seven historical archives copied | Name/size comparisons only; full restore/hash checks not completed |
+| Scheduled DB backup | **Nov 17 and Nov 18 automatic archives confirmed** in the private bucket | Earlier 403 fixed; intermittent initial 501s succeeded on retries |
+| Seven-day DB backup retention | **Configured Nov 17; observed Nov 18** | Private bucket contained seven archives, Nov 11–17; older Nov 8–10 no longer present |
+| R2 credential scope | Dedicated media/backup tokens installed; historical broad administrator token revoked | No repeat rotation needed absent new evidence |
+| Historical backup originals in media bucket | **Seven Nov 8–14 archives retained temporarily** by Nov 18 decision | Confidentiality/access risk and safe retirement require a separate decision; no deletion yet |
+| Weekly remote-media cache cleanup | Timer configured, first live run not yet observed | Inspect Nov 22 execution on Nov 23 |
+| Operational documentation | Nov 18 record consolidation applied to mastodon-lab and handbook | Continue only when actual state/decision changes |
 
-## Scheduled follow-ups (JST)
+## Evidence: scheduled database backup and rotation
 
-| When | Checkpoint | Condition |
-| --- | --- | --- |
-| Nov 17, 09:30–10:00 | Verify scheduled database backup in the private R2 bucket | Check cron outcome and archive; not manual upload alone |
-| Nov 17, 10:00–10:30 | Review restoring seven-day backup retention | **Only if** the automated backup succeeded |
-| Nov 18, 14:30–15:00 | Decide whether to keep the backup originals in the old bucket | No deletion before a separate safety decision |
-| Nov 18, 15:15–16:00 | Consolidate the operations/handbook records | Keep evidence boundaries and open conditions |
-| Nov 23, 09:30–10:00 | Review first weekly media cleanup and Healthchecks result | First timer run due Nov 22, 04:00; do not force a duplicate cleanup |
-
-Scheduled times reflect the **Nov 16 documented plan**, not a live calendar check or proof of execution.
+- **Nov 17 (04:00 JST):** New private-bucket archive `2026-11-16_19-00.tar.gz`, **3,504,909,927 bytes**, listed after cron. Log showed initial 501 response followed by successful retry; the local archive had been cleaned.
+- **Nov 17:** After a successful automatic backup, restored the seven-day `rclone delete --min-age 7d` line in `backup.sh` following the upload command. A pre-change script copy was kept and `bash -n` passed; this step did not execute a manual deletion.
+- **Nov 18 (04:00 JST):** New archive `2026-11-17_19-00.tar.gz`, **3,509,560,816 bytes**, listed after cron; initial 501 retried successfully. New private bucket listed **seven archives dated Nov 11–17**, with the earlier Nov 8–10 archives no longer present; consistent with active age-based retention.
+- **Old media bucket:** All seven backup originals dated Nov 8–14 still listed. No original source deletion.
+- File existence and names/sizes do **not** establish file hashes, database readability, or a full service restore. This status is a recorded checkpoint, not a guarantee of continued cron success after Nov 18.
 
 ## Preserved decisions and limitations
 
-- Do **not** rerun completed legacy media deletion batches. The 30,949 old-path attachment objects remaining in the Nov 16 inventory align in count with `no_copy=30,867` plus `mismatch=82`, but individual identities were **not** exhaustively established. These are preservation signals, not deletion authorization.
-- The media integrity checks were **samples**, not a full DB–R2 audit. A missing remote account header remains deferred; do not treat it as a diagnosis of general service-wide data loss.
-- Copied backup archive names and sizes matched; this does **not** establish cryptographic equivalence or restore readiness. Existing backup originals were not deleted.
-- The production database backup archives remain **unencrypted**. Private bucket access and scoped credentials are not archive encryption. Encryption, full restore validation, and per-file hash verification are **separate, unscheduled work** rather than prerequisites retroactively added to the completed media cleanup.
-- A successful **manual** upload after a failed Nov 16 scheduled run is not evidence that the next scheduled cron run succeeds.
-- Do not mix R2 maintenance status with Elasticsearch snapshot recovery or unrelated host upgrades.
+- Do **not** delete the remaining old-path media merely to reach zero residual objects. The 30,949 retained attachment objects align numerically with `no_copy=30,867` + `mismatch=82` from prior logs; identities were not exhaustively reconciled.
+- Do **not** treat a few DB/R2 samples as a full integrity check. An unavailable remote header is a separate, limited cache finding.
+- The old media bucket still contains **sensitive, unencrypted backup archives**. Temporary retention is a data-preservation choice, **not** a determination that public access is impossible or that indefinite storage there is prudent.
+- Production DB archive encryption and complete application restoration remain **deferred**, not required to declare this R2 migration/rotation phase operationally complete.
+- Do not conflate Elasticsearch encrypted snapshots with application DB backups. No unrelated production services, R2 objects, or existing historical logs were changed by the Nov 18 documentation update.
 
 ## Source records
 
-- [Cloudflare R2 media maintenance and weekly cleanup automation (Oct 31–Nov 15)](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
-- [Cloudflare R2 backup isolation, credential rotation, and legacy object review (Nov 15–16)](operations/cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md)
+- [R2 media cleanup and weekly maintenance, Oct 31–Nov 15](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
+- [R2 backup isolation, scoped tokens, legacy object review, Nov 15–18](operations/cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md)
 
 ## How to maintain this page
 
-Update this page **only when a meaningful workstream state, decision, or next checkpoint changes**. Record the date and cite the relevant operation/incident/update log; keep detailed evidence in those source documents. Distinguish planned actions, manually verified actions, and observed automatic executions. Never publish tokens, secrets, user-media paths, raw backups, or live security-control values.
+Update only for a meaningful decision, observed execution, or next checkpoint. Keep detailed evidence in linked records. Differentiate **configured**, **manually observed**, **automatically executed**, and **still unknown**; do not publish live secrets, user-media paths, raw backups, or monitoring credentials.
