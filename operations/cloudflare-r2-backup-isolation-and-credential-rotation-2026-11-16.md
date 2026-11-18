@@ -1,14 +1,14 @@
-# Cloudflare R2 Backup Isolation, Credential Rotation, and Legacy Object Review (2026-11-15–16)
+# Cloudflare R2 Backup Isolation, Credential Rotation, and Legacy Object Review (2026-11-15–18)
 
-> **Interim field notes (2026-11-16 JST).** Preserve the checked outcomes and explicit unknowns before the planned documentation edit on 2026-11-18. This is a production case record, not a generic copy-paste migration guide. No secrets, access keys, backup archives, or individual user media paths are published.
+> **Consolidated production case record, updated 2026-11-18 JST.** Historical operations, observed outcomes, and remaining verification limits are distinguished. Not a generic copy-paste procedure; no secrets, access keys, or archive contents are published.
 
-## Scope and outcome at the checkpoint
+## Scope and verified outcome
 
 - **Service:** Mustard Mastodon production, Docker Compose, Cloudflare R2.
-- **Completed:** Separated database backup destination from public media storage; transferred the existing backup archives by copy; moved Mastodon media credentials to a bucket-scoped token; recreated the three affected application containers sequentially; verified media upload/view; removed the legacy administrator rclone remote; operator revoked the old broad-scope Cloudflare R2 API token.
-- **Partially verified:** A backup archive was uploaded successfully to the new private bucket **manually** after a failed scheduled run. The **next automatic cron run had not yet been verified** at this checkpoint.
-- **Not completed:** Re-enabling the seven-day retention deletion, hash/integrity verification of all copied archives, full production disaster recovery, encryption of the production database backup archive, removal of original backup archives from the old bucket, and the first weekly remote-cache cleanup/Healthchecks production delivery.
-- **Decision:** Do not rerun completed legacy media deletion batches and do not delete the remaining legacy objects en masse.
+- **Completed:** Dedicated private R2 database backup bucket and scoped credentials; seven historical archives copied; Mastodon media token scoped to the media bucket and verified with real upload/view; old all-bucket administrator token revoked; **scheduled backups on Nov 17 and 18 confirmed**; **seven-day retention re-enabled on Nov 17 and observed in the Nov 18 inventory**.
+- **Not demonstrated:** Full DB/Mastodon restore, cryptographic equivalence of historical archive copies, production DB archive encryption, or first weekly cache-cleanup/Healthchecks delivery (Nov 22).
+- **Decisions:** Continue to **preserve** the 73,071 residual old-path media objects; retain the seven original old-bucket backup archives **temporarily** pending a separate safe-retirement decision. No bulk delete or recovery batch was restarted.
+- **Evidence boundary:** File uploads, object existence, and retention operation are not proof of full restore readiness.
 
 ## 1. Database backup separated from media
 
@@ -22,7 +22,7 @@ The existing production `backup.sh` retained the PostgreSQL dump and archive flo
 mustard-backup:mustard-db-backups/backup/
 ```
 
-The script's `set -x` was changed to fail-fast behavior (`set -euo pipefail` and `umask 077`), so a failed upload does not proceed to the local archive cleanup. The earlier **seven-day deletion was intentionally disabled** pending confirmation of a successful scheduled run. The cron schedule itself was not changed: 19:00 UTC daily, or 04:00 JST the following morning.
+The script's `set -x` was changed to fail-fast behavior (`set -euo pipefail` and `umask 077`), so a failed upload does not proceed to local cleanup. The prior **seven-day deletion was intentionally disabled during migration**, then re-enabled on Nov 17 after the first confirmed automatic upload. The cron schedule remained 19:00 UTC daily, or 04:00 JST the next morning.
 
 ### Backup transfer evidence
 
@@ -32,7 +32,15 @@ The script's `set -x` was changed to fail-fast behavior (`set -euo pipefail` and
 - **Historical migration:** The seven earlier archives (Nov 8–14) were **copied**, not moved, from the historical media-bucket backup prefix to the new private bucket. `rclone` reported 22.762 GiB transferred; comparison of name/size listings reported no missing entries.
 - **Limitations:** Filename/size comparison does not establish SHA-256 equivalence or restore readiness. Source backup copies remain in the original bucket.
 
-**Follow-up gate:** After the next cron-generated archive is confirmed in the private bucket, evaluate re-enabling the seven-day retention policy for the new destination. Do not let a rotation/retention operation inadvertently delete archives needed to recover from an unverified migration. The previously copied backup originals are a separate, deliberate cleanup decision.
+### Scheduled backups and seven-day retention (Nov 17–18 JST)
+
+- **Nov 17, 04:00 JST:** The cron-produced `2026-11-16_19-00.tar.gz` was present in the private bucket at **3,504,909,927 bytes**; a transient `501 NotImplemented` on the first attempt was followed by a successful second attempt. The local archive was absent after completion. This verified the **automatic** upload path rather than only manual recovery.
+- **Nov 17 configuration:** After a read-only retention preview, `rclone delete mustard-backup:mustard-db-backups/backup/ --min-age 7d --include "*.tar.gz"` was restored immediately after the successful copy command. A pre-change script copy was preserved; `bash -n` passed. No deletion was invoked manually.
+- **Nov 18, 04:00 JST:** The cron-produced `2026-11-17_19-00.tar.gz` was present at **3,509,560,816 bytes**; the first 501 again retried successfully.
+- **First retention inventory:** The private bucket had **seven archives dated Nov 11–17**. The earlier Nov 8–10 archives were no longer listed after this scheduled run. This is consistent with the new seven-day, object-modtime-based rotation taking effect; the displayed log tail did not enumerate deletion operations.
+- **Old-bucket inventory:** All seven historical backup originals from Nov 8–14 remained in the legacy nested path of the media bucket. No source archive was removed.
+
+**Nov 18 handling decision:** Temporarily preserve these seven originals rather than deleting them during this maintenance pass. Migrated archive names and sizes were checked, but neither content hashes nor a full application restore were verified. The old location is a media bucket holding archives with sensitive configuration: public-read restrictions must not be inferred from a single HTTP HEAD result, and indefinite retention there should not be assumed safe. Any eventual retirement/access-control change is a separate, explicitly reviewed action.
 
 ## 2. Bucket-scoped media token and retirement of the old administrator token
 
@@ -93,17 +101,16 @@ Other historical cleanup logs reported protected database references for avatars
 
 **Decision on 2026-11-16:** Retain all remaining legacy media prefixes (`media_attachments/`, `cache/`, `accounts/`, `custom_emojis/`, `site_uploads/`, `system2/`) unless a **specific** future need, matching DB references, and validated recoverable copies justify a targeted change. Retention of legacy media is not an outstanding mass deletion failure. No new broad recovery or deletion batch was authorized.
 
-## 4. Remaining work and scheduling
+## 4. Checkpoints and remaining follow-up
 
-The operator scheduled the following work in Google Calendar (JST):
-
-| Date/time (JST) | Activity | Condition |
+| Date (JST) | Checkpoint | Result |
 | --- | --- | --- |
-| Nov 17, 09:30–10:00 | Verify the Nov 17 04:00 automatic DB backup | Check cron result and archive in the private bucket |
-| Nov 17, 10:00–10:30 | Restore seven-day backup retention | **Only if** the automatic backup succeeded |
-| Nov 18, 14:30–15:00 | Decide whether old-bucket backup originals should remain | No deletion before safety decision |
-| Nov 18, 15:15–16:00 | Consolidate/update mastodon-lab and handbook documentation | Preserve evidence and open conditions |
-| Nov 23, 09:30–10:00 | Check first weekly media-cache cleanup and Healthchecks | Observe Nov 22 scheduled run; no forced duplicate deletion |
+| Nov 17 | Cron backup to new private bucket | **Confirmed**; retry from initial transient 501 |
+| Nov 17 | Re-enable seven-day retention in `backup.sh` | **Configured and syntax-checked** |
+| Nov 18 | Cron backup and first retention operation | **Observed**: seven Nov 11–17 archives; older copies absent in private bucket |
+| Nov 18 | Original backups in old media bucket | **Seven retained temporarily**, no deletion |
+| Nov 18 | Operational/handbook documentation | **Consolidation update**; no production changes |
+| Nov 22 / review Nov 23 | First weekly remote-media cleanup and Healthchecks delivery | **Pending observation** |
 
 ### Deferred, not prerequisites for this R2 cleanup
 
