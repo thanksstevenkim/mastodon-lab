@@ -28,6 +28,7 @@ Some runbooks are still being developed. Documents marked **Draft** are placehol
 
 ### Featured Documentation
 
+- [2026-11-19 Mastodon 4.7.6 and Ruby 4.0.10 security upgrade](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md)
 - [2026-11-19 Nginx USN-9159-1 security update and verification](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [2026-11-15 one-minute website availability check and Healthchecks alerts](operations/website-healthchecks-monitoring-2026-11-15.md)
 - [2026-11-15 Ubuntu 24.04 package maintenance and controlled reboot](operations/ubuntu-24-04-package-updates-and-reboot-2026-11-15.md)
