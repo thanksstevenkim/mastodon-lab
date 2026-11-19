@@ -30,6 +30,7 @@
 
 ### 주요 문서
 
+- [2026-11-19: Mastodon 4.7.6 및 Ruby 4.0.10 보안 업데이트](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md)
 - [2026-11-19: Nginx USN-9159-1 보안 업데이트 및 검증](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [2026-11-15: 웹사이트 가용성 1분 주기 점검과 Healthchecks 알림](operations/website-healthchecks-monitoring-2026-11-15.md)
 - [2026-11-15: Ubuntu 24.04 패키지 유지보수와 통제된 재부팅](operations/ubuntu-24-04-package-updates-and-reboot-2026-11-15.md)
