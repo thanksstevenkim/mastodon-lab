@@ -2,7 +2,7 @@
 
 > **Last documented checkpoint:** 2026-11-19 (JST).
 >
-> This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers R2 maintenance and the latest Nginx security-patch checkpoint; silence about other workstreams does not prove their health or completion.
+> This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers R2 maintenance and the latest Nginx and Mastodon/Ruby security-patch checkpoints; silence about other workstreams does not prove their health or completion.
 
 ## Next checkpoint
 
@@ -12,6 +12,7 @@
 
 | Workstream | Latest recorded state | Boundary / next action |
 | --- | --- | --- |
+| Mastodon 4.7.6 + Ruby 4.0.10 security upgrade | **Deployed and verified Nov 19:** Web and Sidekiq healthy on new image; local health endpoint and public HTTPS 200; Nori enabled and no reported index mismatches | Technical deployment complete; source branch remote push and user-facing notice not confirmed; preserve rollback resources |
 | Nginx USN-9159-1 security patch | **Completed Nov 19:** Ubuntu 24.04 `nginx` / `nginx-common` updated to `1.24.0-2ubuntu7.20`; `nginx -t`, service status, origin HTTP/1.1 200 and public HTTP/2 200 confirmed | Origin HTTP/2 remains disabled by choice; no further immediate patch action or repeat checks needed |
 | R2 media legacy cleanup | Historical media/preview-card batches completed | Do not rerun previously successful deletion batches |
 | Residual nested-path media | **Preserved by decision**: 73,071 objects; 14.601 GiB based on rounded inventory | No broad removal or recovery without specific grounds |
@@ -23,6 +24,13 @@
 | Historical backup originals in media bucket | **Seven Nov 8–14 archives retained temporarily** by Nov 18 decision | Confidentiality/access risk and safe retirement require a separate decision; no deletion yet |
 | Weekly remote-media cache cleanup | Timer configured, first live run not yet observed | Inspect Nov 22 execution on Nov 23 |
 | Operational documentation | Nov 18 record consolidation applied to mastodon-lab and handbook | Continue only when actual state/decision changes |
+
+## Mastodon 4.7.6 / Ruby 4.0.10 checkpoint (Nov 19)
+
+- From local branch `upgrade-4.7.6`, official `v4.7.6` was merged into the customized source at commit `5bdc0290c0`; the only merge conflict was the Ruby version line in `Gemfile.lock`. The Ruby 4.0.10 version references and retained Nori source files were checked. Source branch remote push has not been confirmed.
+- One Docker image build completed: `mustardkim/mastodon-mustard:v4.7.6-ruby4.0.10-5bdc0290c0`. The effective Compose override was backed up and its two Web/Sidekiq image references updated. A scoped `docker compose up -d --no-deps --no-build --pull never web sidekiq` replaced those containers.
+- Final observed checks: both `healthy`; local `/health` OK; public HTTPS 200; Rails Mastodon `4.7.6`, Ruby `4.0.10`; `NoriSearch::ReadIndexes.enabled?` true; admin Elasticsearch index mismatch list `[]`. This was a scoped post-deployment check, not an exhaustive application regression audit. No new DB migration, reindex, or unrelated service restart was performed.
+- See [full upgrade log](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md).
 
 ## Nginx security-patch checkpoint (Nov 19)
 
@@ -48,6 +56,7 @@
 
 ## Source records
 
+- [Mastodon 4.7.6 / Ruby 4.0.10 security upgrade, Nov 19](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md)
 - [Nginx USN-9159-1 security update and verification, Nov 19](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [R2 media cleanup and weekly maintenance, Oct 31–Nov 15](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
 - [R2 backup isolation, scoped tokens, legacy object review, Nov 15–18](operations/cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md)
