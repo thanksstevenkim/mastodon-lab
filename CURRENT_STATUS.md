@@ -1,8 +1,8 @@
 # Current Operations Status
 
-> **Last documented checkpoint:** 2026-11-18 (JST).
+> **Last documented checkpoint:** 2026-11-19 (JST).
 >
-> This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers the R2 maintenance workstream; silence about other workstreams does not prove their health or completion.
+> This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers R2 maintenance and the latest Nginx security-patch checkpoint; silence about other workstreams does not prove their health or completion.
 
 ## Next checkpoint
 
@@ -10,8 +10,9 @@
 
 ## Workstream status
 
-| Workstream | State at Nov 18 checkpoint | Boundary / next action |
+| Workstream | Latest recorded state | Boundary / next action |
 | --- | --- | --- |
+| Nginx USN-9159-1 security patch | **Completed Nov 19:** Ubuntu 24.04 `nginx` / `nginx-common` updated to `1.24.0-2ubuntu7.20`; `nginx -t`, service status, origin HTTP/1.1 200 and public HTTP/2 200 confirmed | Origin HTTP/2 remains disabled by choice; no further immediate patch action or repeat checks needed |
 | R2 media legacy cleanup | Historical media/preview-card batches completed | Do not rerun previously successful deletion batches |
 | Residual nested-path media | **Preserved by decision**: 73,071 objects; 14.601 GiB based on rounded inventory | No broad removal or recovery without specific grounds |
 | DB–R2 consistency | Limited samples only; one remote account header still unrecovered | No full integrity claim or automatic remedial batch |
@@ -22,6 +23,12 @@
 | Historical backup originals in media bucket | **Seven Nov 8–14 archives retained temporarily** by Nov 18 decision | Confidentiality/access risk and safe retirement require a separate decision; no deletion yet |
 | Weekly remote-media cache cleanup | Timer configured, first live run not yet observed | Inspect Nov 22 execution on Nov 23 |
 | Operational documentation | Nov 18 record consolidation applied to mastodon-lab and handbook | Continue only when actual state/decision changes |
+
+## Nginx security-patch checkpoint (Nov 19)
+
+- Ubuntu advisory [USN-9159-1](https://ubuntu.com/security/notices/USN-9159-1) identifies `1.24.0-2ubuntu7.20` as a fix for Ubuntu 24.04. Before official package availability, both origin HTTP/2 listen options were disabled; subsequent local-origin and public HTTPS probes returned 200.
+- APT simulated and then installed **only** `nginx` and `nginx-common` (`1.24.0-2ubuntu7.19` → `1.24.0-2ubuntu7.20`). Final observed `nginx -t` passed, the service was `active`, the master executable was `/usr/sbin/nginx`, the origin negotiated HTTP/1.1 and the public endpoint negotiated HTTP/2, both with HTTP 200.
+- This is an observed post-update checkpoint, not continuous proof of service health or an exhaustive audit. The temporary Nginx patch-watch automation was paused. See [full update log](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md).
 
 ## Evidence: scheduled database backup and rotation
 
@@ -41,6 +48,7 @@
 
 ## Source records
 
+- [Nginx USN-9159-1 security update and verification, Nov 19](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [R2 media cleanup and weekly maintenance, Oct 31–Nov 15](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
 - [R2 backup isolation, scoped tokens, legacy object review, Nov 15–18](operations/cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md)
 
