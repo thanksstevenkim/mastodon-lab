@@ -30,6 +30,7 @@
 
 ### 주요 문서
 
+- [2026-11-19: Nginx USN-9159-1 보안 업데이트 및 검증](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [2026-11-15: 웹사이트 가용성 1분 주기 점검과 Healthchecks 알림](operations/website-healthchecks-monitoring-2026-11-15.md)
 - [2026-11-15: Ubuntu 24.04 패키지 유지보수와 통제된 재부팅](operations/ubuntu-24-04-package-updates-and-reboot-2026-11-15.md)
 - [2026-11-15: Cloudflare R2 레거시 미디어 정리와 주간 자동화](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
