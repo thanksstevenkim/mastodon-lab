@@ -1,13 +1,13 @@
-# Cloudflare R2 Backup Isolation, Credential Rotation, and Legacy Object Review (2026-11-15–18)
+# Cloudflare R2 Backup Isolation, Credential Rotation, and Legacy Object Review (2026-11-15–23)
 
-> **Consolidated production case record, updated 2026-11-18 JST.** Historical operations, observed outcomes, and remaining verification limits are distinguished. Not a generic copy-paste procedure; no secrets, access keys, or archive contents are published.
+> **Consolidated production case record, updated 2026-11-23 JST.** Historical operations, observed outcomes, and remaining verification limits are distinguished. Not a generic copy-paste procedure; no secrets, access keys, or archive contents are published.
 
 ## Scope and verified outcome
 
 - **Service:** Mustard Mastodon production, Docker Compose, Cloudflare R2.
 - **Completed:** Dedicated private R2 database backup bucket and scoped credentials; seven historical archives copied; Mastodon media token scoped to the media bucket and verified with real upload/view; old all-bucket administrator token revoked; **scheduled backups on Nov 17 and 18 confirmed**; **seven-day retention re-enabled on Nov 17 and observed in the Nov 18 inventory**.
-- **Not demonstrated:** Full DB/Mastodon restore, cryptographic equivalence of historical archive copies, production DB archive encryption, or first weekly cache-cleanup/Healthchecks delivery (Nov 22).
-- **Decisions:** Continue to **preserve** the 73,071 residual old-path media objects; retain the seven original old-bucket backup archives **temporarily** pending a separate safe-retirement decision. No bulk delete or recovery batch was restarted.
+- **Not demonstrated:** Full DB/Mastodon restore, cryptographic equivalence of historical archive copies, or production DB archive encryption. The Nov 22 first weekly media cleanup succeeded with a server-side Healthchecks `DELIVERED` log; independent provider-side receipt was not checked.
+- **Decisions:** Continue to **preserve** the 73,071 residual old-path media objects. Seven original archives in the old media-bucket backup prefix were temporarily retained on Nov 18, then **explicitly deleted on Nov 23** after private-bucket seven-day rotation and an exact-path dry run were confirmed. No legacy media cleanup batch was restarted.
 - **Evidence boundary:** File uploads, object existence, and retention operation are not proof of full restore readiness.
 
 ## 1. Database backup separated from media
@@ -30,7 +30,7 @@ The script's `set -x` was changed to fail-fast behavior (`set -euo pipefail` and
 - **Remediation:** `no_check_bucket = true` for the limited-permission `mustard-backup` remote, avoiding a bucket-check operation not allowed by the token. This was an observed fix for this credential/setup, not a universal requirement for all R2 clients.
 - **Manual recovery of that day's archive:** `2026-11-15_19-00.tar.gz`, 3,502,998,300 bytes, uploaded successfully after an initial transient `501 NotImplemented` and retry; remote file name/size confirmed.
 - **Historical migration:** The seven earlier archives (Nov 8–14) were **copied**, not moved, from the historical media-bucket backup prefix to the new private bucket. `rclone` reported 22.762 GiB transferred; comparison of name/size listings reported no missing entries.
-- **Limitations:** Filename/size comparison does not establish SHA-256 equivalence or restore readiness. Source backup copies remain in the original bucket.
+- **Limitations at the Nov 16 migration checkpoint:** Filename/size comparison did not establish SHA-256 equivalence or restore readiness. Source backup copies **were preserved through Nov 18** and were subsequently deleted on Nov 23 as recorded below.
 
 ### Scheduled backups and seven-day retention (Nov 17–18 JST)
 
@@ -41,6 +41,19 @@ The script's `set -x` was changed to fail-fast behavior (`set -euo pipefail` and
 - **Old-bucket inventory:** All seven historical backup originals from Nov 8–14 remained in the legacy nested path of the media bucket. No source archive was removed.
 
 **Nov 18 handling decision:** Temporarily preserve these seven originals rather than deleting them during this maintenance pass. Migrated archive names and sizes were checked, but neither content hashes nor a full application restore were verified. The old location is a media bucket holding archives with sensitive configuration: public-read restrictions must not be inferred from a single HTTP HEAD result, and indefinite retention there should not be assumed safe. Any eventual retirement/access-control change is a separate, explicitly reviewed action.
+
+### Legacy old-bucket backup archive retirement (Nov 23 JST)
+
+After the new private R2 destination's daily upload and seven-day age-based retention were confirmed, the operator performed a **separate, narrowly scoped source cleanup** rather than adding any permanent cleanup timer to the media bucket.
+
+- **Private backup listing immediately before deletion:** seven current daily archives, dated **Nov 16–22**, under `mustard-backup:mustard-db-backups/backup/`; latest archive `2026-11-22_19-00.tar.gz`, **3,529,008,644 bytes**. This verifies file presence, not full archive integrity or restoration.
+- **Old media-bucket prefix:** seven historical archives dated **Nov 8–14**, listed under `mustard-media:mustard-obj-backup/mustard-obj-backup/backup/`. These were **older than seven days**, and all had already aged out of the private bucket's seven-day rotation. Removing them therefore **permanently discards those historical recovery points**, not merely a set of duplicate current backups.
+- `rclone delete ... --min-age 7d --include "*.tar.gz" --dry-run -v` identified **exactly those seven archives**. The operator then compared the entire direct-file listing with an explicit seven-filename allowlist; the `diff` check passed with no changes.
+- The operator invoked `rclone deletefile` once for **each of those seven exact object paths**, with seven `DELETED=` success lines, followed by a direct `rclone lsf ... --files-only` listing that printed **no remaining files**. The script exited at `STEP 40 COMPLETE` under `set -euo pipefail`.
+- Combined original archive sizes corresponded to approximately **22.76 GiB** of objects removed from the historical backup prefix; no post-delete billed-storage measurement was made.
+- **Scope:** Only the seven named archives in that legacy `backup/` prefix were targeted. No other legacy media path, normal-path media, current private-bucket backup, timer, or production service was changed.
+
+**Outcome:** Old media-bucket DB backup originals **removed (Nov 23)**; the new isolated private backup destination and seven-day rotation remain the active policy. Archive encryption, file-level cryptographic integrity, and full application restore remain separately deferred checks, not implied by successful object management.
 
 ## 2. Bucket-scoped media token and retirement of the old administrator token
 
@@ -110,7 +123,8 @@ Other historical cleanup logs reported protected database references for avatars
 | Nov 18 | Cron backup and first retention operation | **Observed**: seven Nov 11–17 archives; older copies absent in private bucket |
 | Nov 18 | Original backups in old media bucket | **Seven retained temporarily**, no deletion |
 | Nov 18 | Operational/handbook documentation | **Consolidation update**; no production changes |
-| Nov 22 / review Nov 23 | First weekly remote-media cleanup and Healthchecks delivery | **Pending observation** |
+| Nov 22 / review Nov 23 | First weekly remote-media cleanup and Healthchecks delivery | **Observed**: service success, 0 eligible objects; notifier logged `DELIVERED` (provider-side receipt unchecked) |
+| Nov 23 | Legacy old-bucket backup originals | **7 explicit object deletes completed**, empty direct-file listing; old recovery points retired |
 
 ### Deferred, not prerequisites for this R2 cleanup
 
