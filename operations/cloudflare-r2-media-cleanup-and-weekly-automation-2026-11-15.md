@@ -121,3 +121,15 @@ A subsequent **read-only** inventory found 73,071 objects (14.601 GiB by rounded
 The same operating period also included dedicated private database backup storage, scoped R2 credentials, and retirement of the historical broad administrator token. Automatic upload and retention follow-up were pending at this checkpoint.
 
 For the evidence, the limited sample results, credential migration, and exact remaining tasks, see [2026-11-16 R2 backup isolation and credential rotation](cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16.md).
+
+## 2026-11-23 review: first scheduled weekly run
+
+Read-only inspection of systemd state and journal confirms that the **first production run occurred automatically** on **2026-11-22 04:00 JST** (Nov 21 19:00 UTC):
+
+- `mustard-media-cache-cleanup.timer`: `LoadState=loaded`, `ActiveState=active`, `LastTriggerUSec=Sat 2026-11-21 19:00:00 UTC`.
+- `mustard-media-cache-cleanup.service`: started Nov 21 19:00:00 UTC; `Result=success`, `ExecMainStatus=0`; main process exited 19:00:31 UTC.
+- Tool result: `Removed 0 media attachments (approx. 0 Bytes)`, followed by `=== MEDIA CACHE CLEANUP COMPLETE ===`. This is a successful policy run with **zero eligible objects**, not a cleanup failure.
+- Healthchecks notifier log (19:00:32 UTC): `Healthchecks success event: DELIVERED`. This verifies **the notifier reported successful delivery**, but is not an independently observed Healthchecks dashboard receipt.
+- Next timer elapse: **2026-11-29 04:00 JST** (Nov 28 19:00 UTC).
+
+**Decision:** Transition the timer to normal weekly operation without forcing another cleanup, repeating earlier legacy deletion batches, or changing retention policy. Only investigate if a later run/notification indicates a problem. The snapshot is a historical observation, not a live health guarantee.
