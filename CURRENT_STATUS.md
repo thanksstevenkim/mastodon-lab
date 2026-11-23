@@ -1,12 +1,12 @@
 # Current Operations Status
 
-> **Last documented checkpoint:** 2026-11-19 (JST).
+> **Last documented checkpoint:** 2026-11-23 (JST).
 >
 > This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers R2 maintenance and the latest Nginx and Mastodon/Ruby security-patch checkpoints; silence about other workstreams does not prove their health or completion.
 
 ## Next checkpoint
 
-**2026-11-23, 09:30 JST:** Inspect the **first scheduled** `mustard-media-cache-cleanup.timer` execution (due Nov 22, 04:00 JST) and actual Healthchecks delivery. Do not force a duplicate deletion to verify monitoring.
+**Weekly R2 media-cache maintenance is now in regular operation.** The next timer elapse recorded at the Nov 23 review is **2026-11-29, 04:00 JST**; no additional manual validation or duplicate cleanup is required unless an alert, failure, or configuration change makes it necessary. The external Healthchecks dashboard receipt has not been separately inspected.
 
 ## Workstream status
 
@@ -22,7 +22,7 @@
 | Seven-day DB backup retention | **Configured Nov 17; observed Nov 18** | Private bucket contained seven archives, Nov 11–17; older Nov 8–10 no longer present |
 | R2 credential scope | Dedicated media/backup tokens installed; historical broad administrator token revoked | No repeat rotation needed absent new evidence |
 | Historical backup originals in media bucket | **Seven Nov 8–14 archives retained temporarily** by Nov 18 decision | Confidentiality/access risk and safe retirement require a separate decision; no deletion yet |
-| Weekly remote-media cache cleanup | Timer configured, first live run not yet observed | Inspect Nov 22 execution on Nov 23 |
+| Weekly remote-media cache cleanup | **First automatic run succeeded Nov 22**; 0 eligible media removed; Healthchecks notifier logged `DELIVERED` | Normal weekly operation; next scheduled Nov 29 04:00 JST; provider-side receipt not independently checked |
 | Operational documentation | Nov 18 record consolidation applied to mastodon-lab and handbook | Continue only when actual state/decision changes |
 
 ## Mastodon 4.7.6 / Ruby 4.0.10 checkpoint (Nov 19)
@@ -37,6 +37,14 @@
 - Ubuntu advisory [USN-9159-1](https://ubuntu.com/security/notices/USN-9159-1) identifies `1.24.0-2ubuntu7.20` as a fix for Ubuntu 24.04. Before official package availability, both origin HTTP/2 listen options were disabled; subsequent local-origin and public HTTPS probes returned 200.
 - APT simulated and then installed **only** `nginx` and `nginx-common` (`1.24.0-2ubuntu7.19` → `1.24.0-2ubuntu7.20`). Final observed `nginx -t` passed, the service was `active`, the master executable was `/usr/sbin/nginx`, the origin negotiated HTTP/1.1 and the public endpoint negotiated HTTP/2, both with HTTP 200.
 - This is an observed post-update checkpoint, not continuous proof of service health or an exhaustive audit. The temporary Nginx patch-watch automation was paused. See [full update log](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md).
+
+## First weekly remote-media cache cleanup (reviewed Nov 23)
+
+- Scheduled timer triggered **Nov 21 at 19:00 UTC = Nov 22 at 04:00 JST**. Timer showed `ActiveState=active`; service returned `Result=success`, `ExecMainStatus=0`, main process finishing at 19:00:31 UTC.
+- Script reported `Removed 0 media attachments (approx. 0 Bytes)` and `MEDIA CACHE CLEANUP COMPLETE`. Zero removals reflect **no eligible candidates under the configured policy**, not an error.
+- Notifier emitted `Healthchecks success event: DELIVERED` (19:00:32 UTC). This is a **server-side reported delivery**, not independent confirmation from the Healthchecks web dashboard.
+- Next timer execution displayed **Nov 28, 19:00 UTC = Nov 29, 04:00 JST**. No forced manual rerun, extra deletion, or server configuration change was undertaken.
+- Detailed record: [Cloudflare R2 media cleanup and weekly automation](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md).
 
 ## Evidence: scheduled database backup and rotation
 
