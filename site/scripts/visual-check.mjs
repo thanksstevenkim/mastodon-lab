@@ -56,6 +56,11 @@ const checks = [
     width: 1280, height: 800, expected: '.lab-doc--operations',
   },
   {
+    name: 'update-desktop',
+    path: 'records/update-log/4-7-5-security-upgrade-2026-11-13',
+    width: 1280, height: 800, expected: '.lab-doc--update-log',
+  },
+  {
     name: 'update-mobile',
     path: 'records/update-log/4-7-5-security-upgrade-2026-11-13',
     width: 390, height: 844, expected: '.lab-doc--update-log',
@@ -94,6 +99,26 @@ try {
       langSwitch: !!document.querySelector('.navbar__item.dropdown'),
     }));
     const overflow = metrics.documentWidth > metrics.viewport + 2;
+
+    // Confirm actual rendered sidebar links, not just CSS visibility.
+    const category = check.path.match(/^records\/(incidents|runbooks|operations|update-log)\//)?.[1];
+    if (category && check.width >= 1000) {
+      const sidebar = page.locator('.theme-doc-sidebar-menu').filter({visible: true}).first();
+      const hrefs = await sidebar.locator('a[href]').evaluateAll((links) => links.map((a) => new URL(a.href).pathname));
+      const recordPaths = hrefs.map((href) => href.match(/\/records\/(incidents|runbooks|operations|update-log)\//)?.[1]).filter(Boolean);
+      if (!recordPaths.length || recordPaths.some((name) => name !== category)) {
+        errors.push('Sidebar must contain only ' + category + ' document links: ' + recordPaths.join(', '));
+      }
+      if (category === 'incidents') {
+        const ticket = sidebar.locator('.lab-sidebar-ticket').filter({hasText: /^SUP-0001$/});
+        if (await ticket.count() !== 1 || !(await ticket.isVisible())) {
+          errors.push('SUP-0001 must render as a visible separate ticket badge');
+        }
+        if (!(await ticket.locator('..').locator('.lab-sidebar-title').isVisible().catch(() => false))) {
+          errors.push('Incident title must be separate from the ticket badge');
+        }
+      }
+    }
 
     if (check.name.startsWith('incident-')) {
       const labels = await page.locator('.menu__link').allTextContents();
