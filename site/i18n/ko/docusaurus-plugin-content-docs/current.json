@@ -1,0 +1,200 @@
+{
+  "sidebar.incidents.category.Incident Reports": {
+    "message": "장애 기록"
+  },
+  "sidebar.incidents.category.Incident Reports.link.generated-index.title": {
+    "message": "장애 기록"
+  },
+  "sidebar.runbooks.category.Runbooks": {
+    "message": "운영 절차서"
+  },
+  "sidebar.runbooks.category.Runbooks.link.generated-index.title": {
+    "message": "운영 절차서"
+  },
+  "sidebar.updates.category.Update Logs": {
+    "message": "업데이트 기록"
+  },
+  "sidebar.updates.category.Update Logs.link.generated-index.title": {
+    "message": "업데이트 기록"
+  },
+  "sidebar.operations.category.Operations": {
+    "message": "운영 기록"
+  },
+  "sidebar.operations.category.Operations.link.generated-index.title": {
+    "message": "운영 기록"
+  },
+  "sidebar.incidents.doc.incidents/000-ticket-template": {
+    "message": "장애 보고서 양식"
+  },
+  "sidebar.incidents.doc.incidents/001-cloudflare-521-after-upgrade": {
+    "message": "업그레이드 이후 Cloudflare 521 장애"
+  },
+  "sidebar.incidents.doc.incidents/002-elasticsearch-service-name": {
+    "message": "Elasticsearch 서비스 이름 문제"
+  },
+  "sidebar.incidents.doc.incidents/003-docker-image-push-failed-due-to-authentication-error": {
+    "message": "인증 오류로 인한 Docker 이미지 푸시 실패"
+  },
+  "sidebar.incidents.doc.incidents/004-yarn-checksum-mismatch-during-upgrade": {
+    "message": "업그레이드 중 Yarn 체크섬 불일치"
+  },
+  "sidebar.incidents.doc.incidents/005-ruby-runtime-version-mismatch": {
+    "message": "Ruby 런타임 버전 불일치"
+  },
+  "sidebar.incidents.doc.incidents/006-merge-conflicts-after-upstream-merge": {
+    "message": "원본 저장소 병합 이후 충돌"
+  },
+  "sidebar.incidents.doc.incidents/007-database-migration-incomplete-after-upgrade": {
+    "message": "업그레이드 이후 미완료 데이터베이스 마이그레이션"
+  },
+  "sidebar.incidents.doc.incidents/008-git-hooks-executed-with-an-invalid-hookspath": {
+    "message": "잘못된 hooksPath로 실행된 Git 훅"
+  },
+  "sidebar.incidents.doc.incidents/009-github-actions-failures-from-fork-drift": {
+    "message": "포크와 원본 저장소 간 차이로 인한 GitHub Actions 실패"
+  },
+  "sidebar.incidents.doc.incidents/010-automated-registration-abuse-boomprotocolprobe": {
+    "message": "BoomProtocolProbe를 이용한 자동 가입 남용"
+  },
+  "sidebar.incidents.doc.incidents/011-credential-stuffing-ioc-investigation": {
+    "message": "크리덴셜 스터핑 침해 지표 조사"
+  },
+  "sidebar.incidents.doc.incidents/012-sidekiq-pull-queue-backlog-after-account-deletion": {
+    "message": "계정 삭제 이후 Sidekiq Pull 큐 적체"
+  },
+  "sidebar.incidents.doc.incidents/013-intermittent-web-latency-and-webfinger-request-concentration": {
+    "message": "간헐적 웹 지연 및 WebFinger 요청 집중"
+  },
+  "sidebar.incidents.doc.incidents/014-nginx-restart-dns-failure-after-glibc-update-2026-11-13": {
+    "message": "무인 glibc 업데이트 이후 Nginx 521 장애"
+  },
+  "sidebar.operations.doc.operations/account-approval-policy": {
+    "message": "계정 가입 승인 정책"
+  },
+  "sidebar.operations.doc.operations/anti-spam-evolution": {
+    "message": "스팸 대응 체계의 발전"
+  },
+  "sidebar.operations.doc.operations/budae-jjigae-retirement-2026-10-23": {
+    "message": "부대찌개 서비스 종료"
+  },
+  "sidebar.operations.doc.operations/cloudflare-r2-backup-isolation-and-credential-rotation-2026-11-16": {
+    "message": "Cloudflare R2 백업 분리 및 인증정보 교체"
+  },
+  "sidebar.operations.doc.operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15": {
+    "message": "Cloudflare R2 미디어 정리와 주간 자동화"
+  },
+  "sidebar.operations.doc.operations/elasticsearch-pre-nori-snapshot-r2-archive-and-disaster-recovery-2026-10-25": {
+    "message": "Nori 도입 전 Elasticsearch 스냅샷, R2 보관 및 재해 복구"
+  },
+  "sidebar.operations.doc.operations/federation-governance": {
+    "message": "연합 운영 정책"
+  },
+  "sidebar.operations.doc.operations/korean-nori-search-development-and-ci-validation-2026-10-25": {
+    "message": "한국어 Nori 검색 개발 및 CI 검증"
+  },
+  "sidebar.operations.doc.operations/korean-nori-search-production-cutover-2026-11-02-03": {
+    "message": "Nori 검색 운영 전환"
+  },
+  "sidebar.operations.doc.operations/matrix-signup-bot-push-notifications": {
+    "message": "Matrix 가입 검토 봇 푸시 알림"
+  },
+  "sidebar.operations.doc.operations/moderation-fairness-and-limits-2026-10-30": {
+    "message": "중재의 공정성과 한계"
+  },
+  "sidebar.operations.doc.operations/moderation-philosophy": {
+    "message": "중재 철학"
+  },
+  "sidebar.operations.doc.operations/production-maintenance-sidekiq-pghero-r2-nori-2026-10-25-26": {
+    "message": "Sidekiq·PgHero·R2·Nori 운영 유지보수"
+  },
+  "sidebar.operations.doc.operations/sidekiq-delivery-retries-and-daily-audit-2026-10-26": {
+    "message": "Sidekiq 전송 재시도 조사와 일일 점검"
+  },
+  "sidebar.operations.doc.operations/ubuntu-24-04-package-updates-and-reboot-2026-11-15": {
+    "message": "Ubuntu 24.04 패키지 유지보수와 재부팅"
+  },
+  "sidebar.operations.doc.operations/website-healthchecks-monitoring-2026-11-15": {
+    "message": "웹사이트 가용성 점검과 Healthchecks 알림"
+  },
+  "sidebar.runbooks.doc.runbooks/backup": {
+    "message": "백업 운영 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/cloudflare": {
+    "message": "Cloudflare 운영 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/cost": {
+    "message": "운영 비용"
+  },
+  "sidebar.runbooks.doc.runbooks/docker": {
+    "message": "Docker 운영 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/mastodon-signup-review-bot": {
+    "message": "Mastodon 가입 검토 봇"
+  },
+  "sidebar.runbooks.doc.runbooks/oauth-application-fingerprint-blocklist": {
+    "message": "OAuth 애플리케이션 지문 차단 목록"
+  },
+  "sidebar.runbooks.doc.runbooks/oauth-application-name-blocklist": {
+    "message": "OAuth 애플리케이션 이름 차단 목록"
+  },
+  "sidebar.runbooks.doc.runbooks/pre-registration-hcaptcha": {
+    "message": "웹 가입 전 hCaptcha 적용"
+  },
+  "sidebar.runbooks.doc.runbooks/runtime-dependency-security-patches": {
+    "message": "런타임 및 의존성 보안 패치 운영 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/server-setup": {
+    "message": "서버 구성 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/spam-and-moderation": {
+    "message": "스팸 및 중재 운영 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/troubleshooting": {
+    "message": "문제 해결 절차서"
+  },
+  "sidebar.runbooks.doc.runbooks/upgrade": {
+    "message": "Mastodon 업그레이드 운영 절차서"
+  },
+  "sidebar.updates.doc.update-log/4-6-2": {
+    "message": "Mastodon 4.6.2 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-6-4": {
+    "message": "Mastodon 4.6.4 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-6-5": {
+    "message": "Mastodon 4.6.5 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-6-6": {
+    "message": "Mastodon 4.6.6 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-7-1": {
+    "message": "Mastodon 4.7.1 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-7-2": {
+    "message": "Mastodon 4.7.2 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-7-3-ruby-4-0-9-official-base-and-gem-security-2026-10-24": {
+    "message": "Ruby 4.0.9 공식 기반 이미지 및 gem 보안 패치"
+  },
+  "sidebar.updates.doc.update-log/4-7-3-ruby-4-0-9-security-maintenance-2026-10-23": {
+    "message": "Ruby 4.0.9 보안 유지보수"
+  },
+  "sidebar.updates.doc.update-log/4-7-3-security-maintenance-2026-10-22": {
+    "message": "Mastodon 4.7.3 보안 유지보수"
+  },
+  "sidebar.updates.doc.update-log/4-7-3": {
+    "message": "Mastodon 4.7.3 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-7-5-security-upgrade-2026-11-13": {
+    "message": "Mastodon 4.7.5 보안 업데이트"
+  },
+  "sidebar.updates.doc.update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19": {
+    "message": "Mastodon 4.7.6 및 Ruby 4.0.10 보안 업데이트"
+  },
+  "sidebar.updates.doc.update-log/nginx-usn-9159-1-security-patch-2026-11-19": {
+    "message": "Nginx USN-9159-1 보안 업데이트 및 검증"
+  },
+  "sidebar.updates.doc.update-log/nginx-usn-9182-1-post-update-verification-2026-11-27": {
+    "message": "Nginx USN-9182-1 업데이트 후 검증"
+  }
+}

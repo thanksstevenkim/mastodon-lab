@@ -24,6 +24,7 @@ function incidentSidebarItems() {
     return {
       type: 'doc',
       id: 'incidents/' + id,
+      key: 'incidents/' + id,
       label: id.startsWith('000-') ? 'Incident report template' : displayTitle,
       ...(!id.startsWith('000-') && ticketId ? {customProps: {ticketId}} : {}),
     };

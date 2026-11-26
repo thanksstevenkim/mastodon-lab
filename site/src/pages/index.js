@@ -6,6 +6,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 const entries = [
   {
     category: 'INCIDENT / SUP-0014',
+    categoryKo: '장애 기록 / SUP-0014',
     date: '2026.11.13',
     title: 'Nginx restart and R2 DNS failure',
     titleKo: 'Nginx 521: R2 DNS 확인 실패',
@@ -14,6 +15,7 @@ const entries = [
   },
   {
     category: 'RUNBOOK / UPGRADE',
+    categoryKo: '운영 절차서 / 업그레이드',
     date: 'OPERATING PROCEDURE',
     title: 'Mastodon upgrade procedure',
     titleKo: 'Mastodon 업그레이드 운영 절차',
@@ -22,6 +24,7 @@ const entries = [
   },
   {
     category: 'UPDATE LOG / 4.7.5',
+    categoryKo: '업데이트 기록 / 4.7.5',
     date: '2026.11.13–15',
     title: 'Mastodon 4.7.5 security upgrade',
     titleKo: 'Mastodon 4.7.5 보안 업데이트',
@@ -30,6 +33,7 @@ const entries = [
   },
   {
     category: 'OPERATIONS / REFLECTION',
+    categoryKo: '운영 기록 / 성찰',
     date: '2026.10.30',
     title: 'Fairness and the limits of moderation',
     titleKo: '중재의 공정성과 한계',
@@ -49,7 +53,7 @@ export default function Home() {
     >
       <main className="lab-home">
         <header className="lab-home__intro">
-          <p className="lab-eyebrow">FIELD NOTES / SINCE 2022</p>
+          <p className="lab-eyebrow">{ko ? '현장 기록 / 2022년부터' : 'FIELD NOTES / SINCE 2022'}</p>
           <h1>{ko ? <>운영의 기록,<span className="lab-home__title-line">문제 해결의 과정.</span></> : 'The work behind a running service.'}</h1>
           <p className="lab-home__lead">
             {ko
@@ -58,7 +62,7 @@ export default function Home() {
           </p>
           <p className="lab-home__note">
             {ko
-              ? '한국어 화면은 실험 중이며, 원본 기술 문서는 아직 대부분 영어로 제공됩니다.'
+              ? '한국어 메뉴와 문서 목록을 제공합니다. 아직 번역되지 않은 기술 문서는 영어 원문으로 표시됩니다.'
               : 'This is an experimental reading interface. The original Markdown remains the source of truth.'}
           </p>
         </header>
@@ -72,8 +76,8 @@ export default function Home() {
             {entries.map((entry) => (
               <article key={entry.to} className={'lab-entry lab-entry--' + entry.type}>
                 <div className="lab-entry__meta">
-                  <span>{entry.category}</span>
-                  <span>{entry.date}</span>
+                  <span>{ko ? entry.categoryKo : entry.category}</span>
+                  <span>{ko && entry.type === 'runbook' ? '운영 절차' : entry.date}</span>
                 </div>
                 <h3><Link to={entry.to}>{ko ? entry.titleKo : entry.title}</Link></h3>
                 <span aria-hidden="true" className="lab-entry__arrow">↗</span>
@@ -84,7 +88,7 @@ export default function Home() {
 
         <p className="lab-home__outro">
           {ko
-            ? '같은 저장소 안에서도 장애 기록은 타임라인, Runbook은 작업 체크리스트로 읽을 수 있도록 실험하고 있습니다.'
+            ? '같은 저장소 안에서도 장애 기록은 타임라인, 운영 절차서는 작업 체크리스트로 읽을 수 있도록 실험하고 있습니다.'
             : 'One archive, several reading modes: timelines for incidents, checklists for procedures, and quieter layouts for records.'}
         </p>
       </main>
