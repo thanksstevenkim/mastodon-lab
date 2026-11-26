@@ -34,3 +34,11 @@ The site supports EN/KO navigation. Its landing page and prototype UI panels hav
 - Original Markdown files remain authoritative; UI panels summarize only selected observed details.
 - The build-only pull-request workflow performs no deployment.
 - A later production launch should separately decide navigation labels, source document title metadata (incident files use `# Ticket ID`), redirects, translated content, and final GitHub Pages routing.
+
+## Korean interface translations
+
+- Keep the original English Markdown and all document IDs unchanged.
+- The Korean navbar/footer and sidebar labels are stored in the standard Docusaurus JSON dictionaries under `i18n/ko/`. Sidebar document keys use the stable document ID, not the English title. The Korean labels are navigation titles, not claims of a translated document body.
+- Docusaurus supplies its standard localized theme controls. Custom landing-page and prototype panel copy is maintained in the existing locale-aware React components.
+- When adding a document, add its Korean navigation label in `docusaurus-plugin-content-docs/current.json` (use the sidebar name `updates` for `update-log/`). Until a label is supplied, the original title is used.
+- Future translated Markdown goes in `i18n/ko/docusaurus-plugin-content-docs/current/` with the same relative path. Preserve commands, IDs, links, and the distinction between observations and hypotheses. No translated bodies are added by the interface phase.

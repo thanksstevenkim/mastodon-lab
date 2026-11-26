@@ -67,6 +67,13 @@ const checks = [
   },
 ];
 
+// Test all four Korean category pages and their translated navigation.
+const koDocs = checks.filter((check) => check.width === 1280 && check.path.startsWith('records/'));
+for (const check of koDocs) checks.push({...check, name: check.name + '-ko', path: 'ko/' + check.path});
+checks.push({...checks.find((check) => check.name === 'incident-mobile'), name: 'incident-mobile-ko', path: 'ko/' + checks.find((check) => check.name === 'incident-mobile').path});
+
+const koreanCategories = {incidents: '장애 기록', runbooks: '운영 절차서', operations: '운영 기록', 'update-log': '업데이트 기록'};
+
 let browser;
 try {
   await ready();
@@ -101,7 +108,7 @@ try {
     const overflow = metrics.documentWidth > metrics.viewport + 2;
 
     // Confirm actual rendered sidebar links, not just CSS visibility.
-    const category = check.path.match(/^records\/(incidents|runbooks|operations|update-log)\//)?.[1];
+    const category = check.path.replace(/^ko\//, '').match(/^records\/(incidents|runbooks|operations|update-log)\//)?.[1];
     if (category && check.width >= 1000) {
       const sidebar = page.locator('.theme-doc-sidebar-menu').filter({visible: true}).first();
       const hrefs = await sidebar.locator('a[href]').evaluateAll((links) => links.map((a) => new URL(a.href).pathname));
@@ -116,6 +123,29 @@ try {
         }
         if (!(await ticket.locator('..').locator('.lab-sidebar-title').isVisible().catch(() => false))) {
           errors.push('Incident title must be separate from the ticket badge');
+        }
+      }
+    }
+
+    if (check.path.startsWith('ko/') && check.width >= 1000) {
+      const navbar = page.locator('.navbar');
+      for (const label of Object.values(koreanCategories)) {
+        if (!(await navbar.getByText(label, {exact: true}).first().isVisible().catch(() => false))) {
+          errors.push('Missing Korean navbar label: ' + label);
+        }
+      }
+      if (category) {
+        const sidebar = page.locator('.theme-doc-sidebar-menu').filter({visible: true}).first();
+        const label = koreanCategories[category];
+        if (!(await sidebar.getByText(label, {exact: true}).first().isVisible().catch(() => false))) {
+          errors.push('Missing Korean sidebar category: ' + label);
+        }
+        const links = await sidebar.locator('a[href*="/records/' + category + '/"]').allTextContents();
+        if (!links.length || links.some((label) => !/[가-힣]/.test(label))) {
+          errors.push('Untranslated Korean sidebar document labels: ' + links.join(' | '));
+        }
+        if (!(await page.locator('.lab-doc__translation').isVisible().catch(() => false))) {
+          errors.push('Missing English-source notice in untranslated Korean record');
         }
       }
     }

@@ -1,0 +1,11 @@
+{
+  "link.title.Source": {
+    "message": "원본 저장소"
+  },
+  "link.item.label.Mastodon Operations Lab on GitHub": {
+    "message": "GitHub에서 운영 연구실 보기"
+  },
+  "copyright": {
+    "message": "독립 Mastodon 운영 기록 · 실험용 문서 인터페이스"
+  }
+}

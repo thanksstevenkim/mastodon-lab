@@ -30,7 +30,7 @@ export default function DocItemContentWrapper(props) {
       {label && <p className="lab-doc__eyebrow">{label[ko ? 1 : 0]}</p>}
       {untranslated && (
         <p className="lab-doc__translation">
-          기술 문서 원문은 현재 영어입니다. 한국어 전체 번역은 제공되지 않습니다.
+          이 문서의 본문은 아직 한국어로 번역되지 않았습니다. 아래에 영어 원문을 제공합니다.
         </p>
       )}
       {featuredRunbook && (

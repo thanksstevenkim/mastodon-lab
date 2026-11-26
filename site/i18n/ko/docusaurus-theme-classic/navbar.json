@@ -1,0 +1,14 @@
+{
+  "item.label.Incidents": {
+    "message": "장애 기록"
+  },
+  "item.label.Runbooks": {
+    "message": "운영 절차서"
+  },
+  "item.label.Updates": {
+    "message": "업데이트 기록"
+  },
+  "item.label.Operations": {
+    "message": "운영 기록"
+  }
+}
