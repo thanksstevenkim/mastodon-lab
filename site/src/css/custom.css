@@ -106,3 +106,27 @@
   font-family: var(--lab-mono);
   letter-spacing: .015em;
 }
+
+/* Keep incident identifiers distinct from readable, untruncated titles. */
+.lab-sidebar-incident {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .3rem;
+  min-width: 0;
+  width: 100%;
+}
+.lab-sidebar-ticket {
+  display: inline-block;
+  padding: .1rem .4rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: .3rem;
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-800);
+  font: 600 .68rem/1.4 var(--lab-mono);
+  white-space: nowrap;
+}
+.lab-sidebar-title {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
