@@ -72,6 +72,9 @@ const koDocs = checks.filter((check) => check.width === 1280 && check.path.start
 for (const check of koDocs) checks.push({...check, name: check.name + '-ko', path: 'ko/' + check.path});
 checks.push({...checks.find((check) => check.name === 'incident-mobile'), name: 'incident-mobile-ko', path: 'ko/' + checks.find((check) => check.name === 'incident-mobile').path});
 
+checks.push({name: 'untranslated-runbook-ko', path: 'ko/records/runbooks/backup', width: 1280, height: 800, expected: '.lab-doc--runbooks'});
+checks.push({...checks.find((check) => check.name === 'runbook-mobile'), name: 'runbook-mobile-ko', path: 'ko/' + checks.find((check) => check.name === 'runbook-mobile').path});
+
 const koreanCategories = {incidents: '장애 기록', runbooks: '운영 절차서', operations: '운영 기록', 'update-log': '업데이트 기록'};
 
 let browser;
@@ -144,13 +147,21 @@ try {
         if (!links.length || links.some((label) => !/[가-힣]/.test(label))) {
           errors.push('Untranslated Korean sidebar document labels: ' + links.join(' | '));
         }
-        if (!(await page.locator('.lab-doc__translation').isVisible().catch(() => false))) {
-          errors.push('Missing English-source notice in untranslated Korean record');
+        const fallback = check.name === 'untranslated-runbook-ko';
+        const notice = await page.locator('.lab-doc__translation').isVisible().catch(() => false);
+        if (notice !== fallback) errors.push('Incorrect translation notice visibility');
+        if (!fallback) {
+          const body = await page.locator('.markdown').first().innerText();
+          if (!/[가-힣]{2,}/.test(body)) errors.push('Translated body lacks Korean text');
+          const englishPath = origin + base + check.path.replace(/^ko\//, '');
+          const switchLinks = await navbar.locator('a[href]').evaluateAll((items) => items.map((a) => a.href.replace(/\/$/, '')));
+          if (!switchLinks.includes(englishPath.replace(/\/$/, ''))) errors.push('English equivalent record link is missing');
         }
       }
     }
 
     if (check.name.startsWith('incident-')) {
+      if (!(await page.locator('#evidence-and-timeline').count())) errors.push('Incident evidence anchor missing');
       const labels = await page.locator('.menu__link').allTextContents();
       if (labels.some((label) => label.trim() === 'Ticket ID')) {
         errors.push('Incident sidebar still contains an uninformative Ticket ID label');
@@ -166,7 +177,7 @@ try {
       }
     }
 
-    if (check.name === 'runbook-mobile') {
+    if (check.name === 'runbook-mobile' || check.name === 'runbook-mobile-ko') {
       const first = page.locator('.lab-checklist input[type="checkbox"]').first();
       await first.check();
       const value = await page.locator('.lab-panel--runbook progress').getAttribute('value');

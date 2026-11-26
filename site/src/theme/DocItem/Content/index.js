@@ -21,8 +21,7 @@ export default function DocItemContentWrapper(props) {
   const label = labels[category];
   const featuredRunbook = docId === 'runbooks/upgrade';
   const featuredIncident = docId === 'incidents/014-nginx-restart-dns-failure-after-glibc-update-2026-11-13';
-  // The initial prototype has English source Markdown only. Don't imply that
-  // selecting Korean translates these full technical documents.
+  // Translated Markdown resides under i18n/ko; other records use the source fallback.
   const untranslated = ko && !String(metadata.source || '').includes('/i18n/ko/');
 
   return (
