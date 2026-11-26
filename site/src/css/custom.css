@@ -1,0 +1,132 @@
+:root {
+  /* Muted mustard accents on a neutral, technical-journal canvas. */
+  --ifm-color-primary: #826516;
+  --ifm-color-primary-dark: #775b12;
+  --ifm-color-primary-darker: #6e5410;
+  --ifm-color-primary-darkest: #59430d;
+  --ifm-color-primary-light: #927523;
+  --ifm-color-primary-lighter: #a58a38;
+  --ifm-color-primary-lightest: #baa257;
+  --ifm-background-color: #f5f6f4;
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-heading-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --lab-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+[data-theme='dark'] {
+  --ifm-color-primary: #d8b75a;
+  --ifm-color-primary-dark: #c9a54b;
+  --ifm-color-primary-darker: #bd983f;
+  --ifm-color-primary-darkest: #a57e2a;
+  --ifm-color-primary-light: #e4c676;
+  --ifm-color-primary-lighter: #ecd38f;
+  --ifm-color-primary-lightest: #f3e3b0;
+  --ifm-background-color: #171d1c;
+}
+.navbar { box-shadow: none; border-bottom: 1px solid var(--ifm-color-emphasis-200); }
+.navbar__title { font-family: var(--ifm-heading-font-family); font-size: 1.15rem; }
+.lab-home { width: min(940px, calc(100% - 2.5rem)); margin: 0 auto; padding: 4.5rem 0 7rem; }
+.lab-home__intro { max-width: 780px; padding-bottom: 3.4rem; }
+.lab-eyebrow, .lab-doc__eyebrow, .lab-entry__meta, .lab-panel__topline, .lab-section-heading span {
+  font-family: var(--ifm-font-family-base); font-size: .76rem; font-weight: 700; letter-spacing: .095em;
+}
+.lab-eyebrow, .lab-doc__eyebrow, .lab-panel__topline { color: var(--ifm-color-primary); }
+.lab-home h1 { word-break: keep-all; font-size: clamp(2.4rem, 5vw, 4.8rem); line-height: 1.13; letter-spacing: -.045em; margin: 1.2rem 0; }
+.lab-home__lead { max-width: 650px; font-size: 1.17rem; line-height: 1.85; }
+.lab-home__note, .lab-home__outro { color: var(--ifm-color-emphasis-700); font-size: .95rem; line-height: 1.7; }
+.lab-section-heading { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ifm-font-color-base); margin-bottom: .2rem; }
+.lab-section-heading h2 { font-size: 1.65rem; margin: 0 0 .7rem; }
+.lab-section-heading span, .lab-entry__meta { color: var(--ifm-color-emphasis-700); }
+.lab-entry { position: relative; padding: 1.4rem 3rem 1.6rem 0; border-bottom: 1px solid var(--ifm-color-emphasis-300); }
+.lab-entry__meta { display: flex; justify-content: space-between; gap: 1rem; }
+.lab-entry h3 { word-break: keep-all; font-size: clamp(1.3rem, 2.5vw, 1.85rem); line-height: 1.35; margin: .55rem 0 0; }
+.lab-entry h3 a { color: var(--ifm-font-color-base); text-decoration: none; }
+.lab-entry h3 a:hover, .lab-entry h3 a:focus-visible { color: var(--ifm-color-primary); text-decoration: underline; }
+.lab-entry__arrow { position: absolute; right: .3rem; bottom: 1.7rem; font-size: 1.35rem; color: var(--ifm-color-primary); }
+.lab-home__outro { margin-top: 2.2rem; }
+.lab-doc { padding-top: .3rem; }
+.lab-doc__eyebrow { margin-bottom: .8rem; }
+.lab-doc__translation { border-left: 3px solid var(--ifm-color-primary); padding: .6rem .85rem; background: var(--ifm-color-emphasis-100); font-size: .88rem; }
+.lab-doc--operations .markdown { font-size: 1.06rem; line-height: 1.85; max-width: 780px; }
+.lab-doc--update-log .markdown > h2 { border-bottom: 1px solid var(--ifm-color-emphasis-300); padding-bottom: .55rem; margin-top: 2.4rem; }
+.lab-doc--incidents .markdown > h1 { font-size: 1.7rem; margin-top: 1.6rem; }
+.lab-doc--runbooks .markdown > h2 { border-left: 3px solid var(--ifm-color-primary); padding-left: .85rem; margin-top: 2.3rem; }
+.lab-panel { padding: 1.6rem; margin: 1.1rem 0 2.4rem; border: 1px solid var(--ifm-color-emphasis-300); border-radius: .35rem; background: var(--ifm-background-surface-color); }
+.lab-panel__topline { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.25rem; }
+.lab-panel h2 { margin: .8rem 0 .7rem; font-family: var(--ifm-heading-font-family); }
+.lab-panel p { line-height: 1.7; }
+.lab-panel__disclaimer { border-top: 1px solid var(--ifm-color-emphasis-200); padding-top: .9rem; margin: 1rem 0 0; color: var(--ifm-color-emphasis-700); font-size: .84rem; }
+.lab-panel progress { display: block; height: .5rem; width: 100%; margin: 1.15rem 0; accent-color: var(--ifm-color-primary); }
+.lab-checklist { list-style: none; padding: 0; margin: 0; }
+.lab-checklist li { border-top: 1px solid var(--ifm-color-emphasis-200); }
+.lab-checklist label { display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; padding: .85rem 0; line-height: 1.65; }
+.lab-checklist input { width: 1.12rem; height: 1.12rem; margin-top: .25rem; accent-color: var(--ifm-color-primary); flex-shrink: 0; }
+.lab-timeline { list-style: none; padding: 0 0 0 1rem; margin: 1.45rem 0 0; border-left: 2px solid var(--ifm-color-emphasis-300); }
+.lab-timeline li { position: relative; padding: 0 0 1.3rem 1.25rem; }
+.lab-timeline li::before { content: ''; position: absolute; left: -1.37rem; top: .35rem; width: .65rem; height: .65rem; border-radius: 50%; background: var(--ifm-color-primary); }
+.lab-timeline time { font-weight: 700; font-variant-numeric: tabular-nums; font-size: .84rem; }
+.lab-timeline p { margin: .3rem 0 0; }
+@media (max-width: 760px) {
+  .lab-home { padding-top: 2.6rem; }
+  .lab-home__intro { padding-bottom: 2.3rem; }
+  .lab-entry__meta { flex-wrap: wrap; }
+  .lab-panel { padding: 1rem; }
+  .lab-home__lead { font-size: 1.05rem; }
+}
+
+/* Context first: interactive panels are aids to the source documents. */
+.lab-doc__intro { margin: 1.2rem 0 1.4rem; max-width: 780px; }
+.lab-doc__intro h1 {
+  font-size: clamp(1.85rem, 3.1vw, 2.55rem);
+  line-height: 1.22;
+  word-break: keep-all;
+  letter-spacing: -.025em;
+  margin: .3rem 0 .75rem;
+}
+.lab-doc__intro p { color: var(--ifm-color-emphasis-700); line-height: 1.7; }
+.lab-doc__intro .lab-doc__record-id {
+  color: var(--ifm-color-primary);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+.lab-doc--upgrade-preview .markdown > h1:first-child {
+  display: none; /* The same heading is now placed before the checklist. */
+}
+
+.lab-home__title-line { display: block; }
+
+/* Technical metadata is distinct from the prose, without heavy UI chrome. */
+.lab-eyebrow,
+.lab-doc__eyebrow,
+.lab-panel__topline,
+.lab-doc__record-id,
+.lab-entry__meta,
+.lab-section-heading span,
+.lab-timeline time {
+  font-family: var(--lab-mono);
+  letter-spacing: .015em;
+}
+
+/* Keep incident identifiers distinct from readable, untruncated titles. */
+.lab-sidebar-incident {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .3rem;
+  min-width: 0;
+  width: 100%;
+}
+.lab-sidebar-ticket {
+  display: inline-block;
+  padding: .1rem .4rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: .3rem;
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-800);
+  font: 600 .68rem/1.4 var(--lab-mono);
+  white-space: nowrap;
+}
+.lab-sidebar-title {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
