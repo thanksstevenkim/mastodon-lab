@@ -1,6 +1,6 @@
 # Current Operations Status
 
-> **Last documented checkpoint:** 2026-11-23 (JST).
+> **Last documented checkpoint:** 2026-11-27 (JST).
 >
 > This is the latest **recorded decision and observed-result index**, not a live production dashboard. It covers R2 maintenance and the latest Nginx and Mastodon/Ruby security-patch checkpoints; silence about other workstreams does not prove their health or completion.
 
@@ -13,7 +13,7 @@
 | Workstream | Latest recorded state | Boundary / next action |
 | --- | --- | --- |
 | Mastodon 4.7.6 + Ruby 4.0.10 security upgrade | **Deployed and verified Nov 19:** Web and Sidekiq healthy on new image; local health endpoint and public HTTPS 200; Nori enabled and no reported index mismatches | Technical deployment complete; source branch remote push and user-facing notice not confirmed; preserve rollback resources |
-| Nginx USN-9159-1 security patch | **Completed Nov 19:** Ubuntu 24.04 `nginx` / `nginx-common` updated to `1.24.0-2ubuntu7.20`; `nginx -t`, service status, origin HTTP/1.1 200 and public HTTP/2 200 confirmed | Origin HTTP/2 remains disabled by choice; no further immediate patch action or repeat checks needed |
+| Nginx USN-9182-1 security patch | **Installed Nov 22; verified Nov 27:** `nginx` / `nginx-common` installed and candidate `1.24.0-2ubuntu7.21`; running master binary hash matches installed binary; configuration passes, service active, public HTTPS health 200 | Installation actor unconfirmed; no manual update or restart needed; prior origin HTTP/2 decision unchanged, negotiation not retested |
 | R2 media legacy cleanup | Historical media/preview-card batches completed | Do not rerun previously successful deletion batches |
 | Residual nested-path media | **Preserved by decision**: 73,071 objects; 14.601 GiB based on rounded inventory | No broad removal or recovery without specific grounds |
 | DB–R2 consistency | Limited samples only; one remote account header still unrecovered | No full integrity claim or automatic remedial batch |
@@ -23,7 +23,7 @@
 | R2 credential scope | Dedicated media/backup tokens installed; historical broad administrator token revoked | No repeat rotation needed absent new evidence |
 | Historical backup originals in media bucket | **Seven Nov 8–14 archives explicitly deleted Nov 23**; post-delete file listing empty | Old recovery points no longer available; no change to preserved media objects |
 | Weekly remote-media cache cleanup | **First automatic run succeeded Nov 22**; 0 eligible media removed; Healthchecks notifier logged `DELIVERED` | Normal weekly operation; next scheduled Nov 29 04:00 JST; provider-side receipt not independently checked |
-| Operational documentation | Nov 18 record consolidation applied to mastodon-lab and handbook | Continue only when actual state/decision changes |
+| Operational documentation | Nov 27 Nginx post-update verification recorded in mastodon-lab; prior handbook consolidation retained | Continue only when actual state/decision changes |
 
 ## Mastodon 4.7.6 / Ruby 4.0.10 checkpoint (Nov 19)
 
@@ -32,7 +32,14 @@
 - Final observed checks: both `healthy`; local `/health` OK; public HTTPS 200; Rails Mastodon `4.7.6`, Ruby `4.0.10`; `NoriSearch::ReadIndexes.enabled?` true; admin Elasticsearch index mismatch list `[]`. This was a scoped post-deployment check, not an exhaustive application regression audit. No new DB migration, reindex, or unrelated service restart was performed.
 - See [full upgrade log](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md).
 
-## Nginx security-patch checkpoint (Nov 19)
+## Nginx USN-9182-1 checkpoint (Nov 27)
+
+- Ubuntu [USN-9182-1](https://ubuntu.com/security/notices/USN-9182-1), published Nov 20, identifies `1.24.0-2ubuntu7.21` as the fixed Nginx version for Ubuntu 24.04.
+- Dpkg logs show both packages upgraded from `7.20` to `7.21` on Nov 22 at 06:18:50 and 06:18:53 (server log time; timezone and installation actor not independently verified).
+- Nov 27: installed and candidate versions match; APT simulation reports zero upgrades, installs or removals; `nginx -t` passed, service active, running master executable SHA-256 equals installed binary, and public HTTPS `/health` returned 200.
+- No package installation, restart, reload or configuration change during this review. Prior origin HTTP/2 decision retained; origin negotiation not retested. No further immediate action. See [verification log](update-log/nginx-usn-9182-1-post-update-verification-2026-11-27.md).
+
+## Nginx security-patch checkpoint (Nov 19; historical)
 
 - Ubuntu advisory [USN-9159-1](https://ubuntu.com/security/notices/USN-9159-1) identifies `1.24.0-2ubuntu7.20` as a fix for Ubuntu 24.04. Before official package availability, both origin HTTP/2 listen options were disabled; subsequent local-origin and public HTTPS probes returned 200.
 - APT simulated and then installed **only** `nginx` and `nginx-common` (`1.24.0-2ubuntu7.19` → `1.24.0-2ubuntu7.20`). Final observed `nginx -t` passed, the service was `active`, the master executable was `/usr/sbin/nginx`, the origin negotiated HTTP/1.1 and the public endpoint negotiated HTTP/2, both with HTTP 200.
@@ -72,6 +79,7 @@
 
 ## Source records
 
+- [Nginx USN-9182-1 post-update verification, Nov 27](update-log/nginx-usn-9182-1-post-update-verification-2026-11-27.md)
 - [Mastodon 4.7.6 / Ruby 4.0.10 security upgrade, Nov 19](update-log/4-7-6-ruby-4-0-10-security-upgrade-2026-11-19.md)
 - [Nginx USN-9159-1 security update and verification, Nov 19](update-log/nginx-usn-9159-1-security-patch-2026-11-19.md)
 - [R2 media cleanup and weekly maintenance, Oct 31–Nov 15](operations/cloudflare-r2-media-cleanup-and-weekly-automation-2026-11-15.md)
