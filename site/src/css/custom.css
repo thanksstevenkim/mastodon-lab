@@ -48,7 +48,8 @@
 .lab-doc__translation { border-left: 3px solid var(--ifm-color-primary); padding: .6rem .85rem; background: var(--ifm-color-emphasis-100); font-size: .88rem; }
 .lab-doc--operations .markdown { font-size: 1.06rem; line-height: 1.85; max-width: 780px; }
 .lab-doc--update-log .markdown > h2 { border-bottom: 1px solid var(--ifm-color-emphasis-300); padding-bottom: .55rem; margin-top: 2.4rem; }
-.lab-doc--incidents .markdown > h1 { font-size: 1.7rem; margin-top: 1.6rem; }
+.lab-doc--incidents .markdown > h1,
+.lab-doc--incidents .markdown > h2 { font-size: 1.7rem; margin-top: 1.6rem; }
 .lab-doc--runbooks .markdown > h2 { border-left: 3px solid var(--ifm-color-primary); padding-left: .85rem; margin-top: 2.3rem; }
 .lab-panel { padding: 1.6rem; margin: 1.1rem 0 2.4rem; border: 1px solid var(--ifm-color-emphasis-300); border-radius: .35rem; background: var(--ifm-background-surface-color); }
 .lab-panel__topline { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.25rem; }

@@ -24,6 +24,9 @@ jobs:
       - name: Install site dependencies
         working-directory: site
         run: npm install --no-audit --no-fund
+      - name: Test locale-independent record link normalization
+        working-directory: site
+        run: node scripts/record-links.test.mjs
       - name: Build both locales
         working-directory: site
         run: npm run build
