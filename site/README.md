@@ -46,3 +46,5 @@ The site supports EN/KO navigation. Its landing page and prototype UI panels hav
 ## First translated records
 
 The first four Korean bodies preserve source document IDs and section anchors. Fenced command/output blocks are copied verbatim from the corresponding English source. The source revision for this batch is `0c91976b4687af64ae4fdb0dc6087a1f5bea3f49`. The English source remains authoritative; review the corresponding translation when its source changes. The site identifies untranslated records separately.
+
+Relative Markdown links between translated and fallback records are normalized to content-root references by `plugins/record-links.mjs` before Docusaurus resolves them. Its normal locale-aware resolution and strict broken-link check remain enabled; source Markdown and link targets are unchanged. The normalization test covers both source directories and preserves query/fragment suffixes.
