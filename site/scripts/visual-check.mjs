@@ -161,7 +161,22 @@ try {
     }
 
     if (check.name.startsWith('incident-')) {
-      if (!(await page.locator('#evidence-and-timeline').count())) errors.push('Incident evidence anchor missing');
+      const evidence = page.locator('.markdown h2#evidence-and-timeline');
+      const evidenceLink = page.locator('.lab-panel--incident a[href="#evidence-and-timeline"]');
+      if (await evidence.count() !== 1 || !(await evidence.isVisible())) {
+        errors.push('Incident evidence heading anchor missing or duplicated');
+      } else if (await evidenceLink.count() !== 1 || !(await evidenceLink.isVisible())) {
+        errors.push('Incident timeline evidence link missing');
+      } else {
+        await evidenceLink.click();
+        if (new URL(page.url()).hash !== '#evidence-and-timeline') {
+          errors.push('Incident evidence link did not navigate to its heading');
+        }
+        await page.evaluate(() => {
+          history.replaceState(history.state, '', location.pathname + location.search);
+          window.scrollTo({top: 0, behavior: 'instant'});
+        });
+      }
       const labels = await page.locator('.menu__link').allTextContents();
       if (labels.some((label) => label.trim() === 'Ticket ID')) {
         errors.push('Incident sidebar still contains an uninformative Ticket ID label');
